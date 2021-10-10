@@ -17,4 +17,4 @@ $ cd Fast-Planner
 $ wstool init && wstool merge fast.rosinstall && wstool update
 ```
 
-
+You may need to install nlopt via this:  https://github.com/ethz-asl/nlopt
