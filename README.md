@@ -9,7 +9,7 @@ To simply set up mapping and simulator for Fast-Planner
 
 ```console
 $ wstool init
-$ wstool merge rotors_hil.rosinstall
+$ wstool merge fast.rosinstall
 $ wstool update
 ```
 
