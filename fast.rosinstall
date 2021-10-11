@@ -1,4 +1,3 @@
 - git: {local-name: plan_env, uri: 'https://github.com/tyuezhan/plan_env.git'}
 - git: {local-name: map_generator, uri: 'https://github.com/yuwei-wu/map_generator.git'}
-- git: {local-name: uav_simulator, uri: 'https://github.com/yuwei-wu/uav_simulator.git'}
 
