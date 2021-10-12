@@ -1,6 +1,6 @@
 # Fast-Planner 
 
-This is the revised version on Ubuntu 20.04/ROS noetic, which can work with the controller here: https://github.com/KumarRobotics/kr\_mav\_control
+This is the revised version on Ubuntu 20.04/ROS noetic, which can work with the controller here: https://github.com/KumarRobotics/kr_mav_control
 
 Independent planning module, code revised from fast planner: https://github.com/HKUST-Aerial-Robotics/Fast-Planner
 
