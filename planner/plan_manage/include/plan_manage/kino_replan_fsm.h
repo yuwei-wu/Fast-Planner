@@ -110,6 +110,7 @@ private:
   void changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call);
   void printFSMExecState();
 
+  void setGoal();
   /* ROS functions */
   void execFSMCallback(const ros::TimerEvent& e);
   void checkCollisionCallback(const ros::TimerEvent& e);

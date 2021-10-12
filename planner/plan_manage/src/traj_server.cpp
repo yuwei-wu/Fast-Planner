@@ -36,10 +36,13 @@ ros::Publisher cmd_vis_pub, pos_cmd_pub, traj_pub;
 nav_msgs::Odometry odom;
 
 kr_mav_msgs::PositionCommand cmd;
-// double pos_gain[3] = {5.7, 5.7, 6.2};
+//double pos_gain[3] = {5.7, 5.7, 6.2};
 // double vel_gain[3] = {3.4, 3.4, 4.0};
+//double pos_gain[3] = { 7.4, 7.4, 10.4};
+//double vel_gain[3] = { 4.8, 4.8,  6.0};
 double pos_gain[3] = { 7.4, 7.4, 10.4};
 double vel_gain[3] = { 4.8, 4.8,  6.0};
+
 
 using fast_planner::NonUniformBspline;
 
@@ -241,6 +244,8 @@ void cmdCallback(const ros::TimerEvent& e) {
   cmd.header.frame_id = frame_id_;
   //cmd.trajectory_flag = kr_mav_msgs::PositionCommand::TRAJECTORY_STATUS_READY;
   //cmd.trajectory_id = traj_id_;
+  cmd.use_msg_gains_flags = kr_mav_msgs::PositionCommand::USE_MSG_GAINS_POSITION_ALL;
+
 
   cmd.position.x = pos(0);
   cmd.position.y = pos(1);

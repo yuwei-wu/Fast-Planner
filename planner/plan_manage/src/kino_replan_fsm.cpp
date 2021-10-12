@@ -39,12 +39,16 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
   nh.param("fsm/thresh_replan", replan_thresh_, -1.0);
   nh.param("fsm/thresh_no_replan", no_replan_thresh_, -1.0);
 
-  nh.param("fsm/waypoint_num", waypoint_num_, -1);
-  for (int i = 0; i < waypoint_num_; i++) {
-    nh.param("fsm/waypoint" + to_string(i) + "_x", waypoints_[i][0], -1.0);
-    nh.param("fsm/waypoint" + to_string(i) + "_y", waypoints_[i][1], -1.0);
-    nh.param("fsm/waypoint" + to_string(i) + "_z", waypoints_[i][2], -1.0);
+
+  if (target_type_ == TARGET_TYPE::PRESET_TARGET){
+    nh.param("fsm/waypoint_num", waypoint_num_, -1);
+    for (int i = 0; i < waypoint_num_; i++) {
+      nh.param("fsm/waypoint" + to_string(i) + "_x", waypoints_[i][0], -1.0);
+      nh.param("fsm/waypoint" + to_string(i) + "_y", waypoints_[i][1], -1.0);
+      nh.param("fsm/waypoint" + to_string(i) + "_z", waypoints_[i][2], -1.0);
+    }
   }
+
 
   /* initialize main modules */
   planner_manager_.reset(new FastPlannerManager);
@@ -65,29 +69,50 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
 }
 
 void KinoReplanFSM::waypointCallback(const nav_msgs::PathConstPtr& msg) {
-  if (msg->poses[0].pose.position.z < -0.1) return;
+
+  if (msg->poses.size() <1 ) return;
 
   cout << "Triggered!" << endl;
   trigger_ = true;
 
   if (target_type_ == TARGET_TYPE::MANUAL_TARGET) {
-    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 1.0;
-
-  } else if (target_type_ == TARGET_TYPE::PRESET_TARGET) {
-    end_pt_(0)  = waypoints_[current_wp_][0];
-    end_pt_(1)  = waypoints_[current_wp_][1];
-    end_pt_(2)  = waypoints_[current_wp_][2];
-    current_wp_ = (current_wp_ + 1) % waypoint_num_;
+    waypoint_num_ = msg->poses.size();
+    for (int i = 0; i < waypoint_num_; i ++){
+      waypoints_[i][0] = msg->poses[i].pose.position.x;
+      waypoints_[i][1] = msg->poses[i].pose.position.y;
+      waypoints_[i][2] = 1.0;
+    }
   }
+
+  current_wp_ = 0;
+
+  setGoal();
+  have_target_ = true;
+}
+
+
+void KinoReplanFSM::setGoal(){
+
+  if(current_wp_ >=  waypoint_num_){
+    have_target_ = false;
+    return;
+  }
+
+  end_pt_(0)  = waypoints_[current_wp_][0];
+  end_pt_(1)  = waypoints_[current_wp_][1];
+  end_pt_(2)  = waypoints_[current_wp_][2];
+  current_wp_ += 1;
+
+  ROS_INFO_STREAM("current_wp_  is : " << current_wp_);
 
   visualization_->drawGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
   end_vel_.setZero();
-  have_target_ = true;
-
+  
   if (exec_state_ == WAIT_TARGET)
     changeFSMExecState(GEN_NEW_TRAJ, "TRIG");
   else if (exec_state_ == EXEC_TRAJ)
     changeFSMExecState(REPLAN_TRAJ, "TRIG");
+
 }
 
 void KinoReplanFSM::odometryCallback(const nav_msgs::OdometryConstPtr& msg) {
@@ -182,7 +207,8 @@ void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
 
       /* && (end_pt_ - pos).norm() < 0.5 */
       if (t_cur > info->duration_ - 1e-2) {
-        have_target_ = false;
+        //have_target_ = false;
+        setGoal();
         changeFSMExecState(WAIT_TARGET, "FSM");
         return;
 

@@ -8,14 +8,13 @@ Independent planning module, code revised from fast planner: https://github.com/
 Clone the repo:
 
 ```console
-$ git clone https://github.com/yuwei-wu/Fast-Planner.git
+$ git clone git@github.com:yuwei-wu/Fast-Planner.git
 
 ```
 To simply set up mapping and simulator in the Fast-Planner
 
 ```console
 $ cd Fast-Planner
-$ git clone https://github.com/ethz-asl/nlopt.git
 $ wstool init && wstool merge fast.rosinstall && wstool update
 ```
 
@@ -39,3 +38,13 @@ terminal 3:
 rosrun rqt_mav_manager rqt_mav_manager
 
 ```
+![](docs/eg.gif)
+
+notice: 
+1. you should keep null_tracker to run fast planner.
+2. you would better to disable the "MAVManager::setPositionCommand" or it may have issue when reaching to the goal point.
+
+
+
+
+
