@@ -1,3 +1,7 @@
 <launch>
-  <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find plan_manage)/config/traj.rviz" />
+  <arg name="rviz_config" default="$(find kr_mav_launch)/launch/rviz_config.rviz"/>
+  <node pkg="rviz"
+    type="rviz"
+    name="rviz"
+    args="-d $(arg rviz_config)"/>
 </launch>
