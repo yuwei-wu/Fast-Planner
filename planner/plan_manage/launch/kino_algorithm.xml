@@ -1,9 +1,10 @@
 <launch>
+  <arg name="world_frame_id"/>
   <arg name="map_size_x_"/>
   <arg name="map_size_y_"/>
   <arg name="map_size_z_"/>
 
-  <arg name="odometry_topic"/>
+  <arg name="odom_topic"/>
   <arg name="camera_pose_topic"/>
   <arg name="depth_topic"/>
   <arg name="cloud_topic"/>
@@ -31,8 +32,10 @@
 
   <!-- main node -->
   <node pkg="plan_manage" name="fast_planner_node" type="fast_planner_node" output="screen">
-    <remap from="/odom_world" to="$(arg odometry_topic)"/>
-    <remap from="/sdf_map/odom" to="$(arg odometry_topic)"/>
+    <param name="world_frame_id" value ="$(arg world_frame_id)"/>
+    
+    <remap from="/odom_world" to="$(arg odom_topic)"/>
+    <remap from="/sdf_map/odom" to="$(arg odom_topic)"/>
     <remap from="/sdf_map/cloud" to="$(arg cloud_topic)"/>
     <remap from = "/sdf_map/pose"   to = "$(arg camera_pose_topic)"/> 
     <remap from = "/sdf_map/depth" to = "$(arg depth_topic)"/>
@@ -95,7 +98,7 @@
     <param name="sdf_map/show_occ_time"  value="false"/>
     <param name="sdf_map/show_esdf_time" value="false"/>
     <param name="sdf_map/pose_type"     value="1"/>  
-    <param name="sdf_map/frame_id"      value="world"/>
+    <param name="sdf_map/frame_id"      value="$(arg world_frame_id)"/>
 
   <!-- planner manager -->
     <param name="manager/max_vel" value="$(arg max_vel)" type="double"/>

@@ -74,6 +74,8 @@ private:
   int last_bspline_phase2_num_;
   int last_frontier_num_;
 
+  std::string frame_id_;
+
 public:
   PlanningVisualization(/* args */) {}
   ~PlanningVisualization() {}

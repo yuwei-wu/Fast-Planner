@@ -35,14 +35,14 @@
 using namespace std;
 
 ros::Publisher state_pub, pos_cmd_pub, traj_pub;
-
+std::string frame_id_;
 nav_msgs::Odometry odom;
 bool have_odom;
 
 void displayPathWithColor(vector<Eigen::Vector3d> path, double resolution, Eigen::Vector4d color,
                           int id) {
   visualization_msgs::Marker mk;
-  mk.header.frame_id = "world";
+  mk.header.frame_id = frame_id_;
   mk.header.stamp = ros::Time::now();
   mk.type = visualization_msgs::Marker::SPHERE_LIST;
   mk.action = visualization_msgs::Marker::DELETE;
@@ -78,7 +78,7 @@ void displayPathWithColor(vector<Eigen::Vector3d> path, double resolution, Eigen
 
 void drawState(Eigen::Vector3d pos, Eigen::Vector3d vec, int id, Eigen::Vector4d color) {
   visualization_msgs::Marker mk_state;
-  mk_state.header.frame_id = "world";
+  mk_state.header.frame_id = frame_id_;
   mk_state.header.stamp = ros::Time::now();
   mk_state.id = id;
   mk_state.type = visualization_msgs::Marker::ARROW;
@@ -117,9 +117,12 @@ int main(int argc, char** argv) {
 
   ros::Subscriber odom_sub = node.subscribe("/uwb_vicon_odom", 50, odomCallbck);
 
+  nh.param<std::string>("world_frame_id", frame_id_, std::string("world"));
+
   traj_pub = node.advertise<visualization_msgs::Marker>("/traj_generator/traj_vis", 10);
   state_pub = node.advertise<visualization_msgs::Marker>("/traj_generator/cmd_vis", 10);
 
+   
   // pos_cmd_pub =
   // node.advertise<quadrotor_msgs::PositionCommand>("/traj_generator/position_cmd",
   // 50);

@@ -149,7 +149,6 @@ void BsplineOptimizer::optimize() {
   opt.set_maxeval(max_iteration_num_[max_num_id_]);
   opt.set_maxtime(max_iteration_time_[max_time_id_]);
   opt.set_xtol_rel(1e-5);
-
   vector<double> q(variable_num_);
   for (int i = order_; i < pt_num; ++i) {
     if (!(cost_function_ & ENDPOINT) && i >= pt_num - order_) continue;
@@ -173,10 +172,8 @@ void BsplineOptimizer::optimize() {
     // vec_time_.clear();
     // vec_cost_.clear();
     // time_start_ = ros::Time::now();
-
     double        final_cost;
     nlopt::result result = opt.optimize(q, final_cost);
-
     /* retrieve the optimization result */
     //cout << "Min cost:" << min_cost_ << endl;
   } catch (std::exception& e) {
@@ -352,7 +349,6 @@ void BsplineOptimizer::combineCost(const std::vector<double>& x, std::vector<dou
 
   // This solver can support 1D-3D B-spline optimization, but we use Vector3d to store each control point
   // For 1D case, the second and third elements are zero, and similar for the 2D case.
-
   for (int i = 0; i < order_; i++) {
     for (int j = 0; j < dim_; ++j) {
       g_q_[i][j] = control_points_(i, j);
@@ -383,7 +379,6 @@ void BsplineOptimizer::combineCost(const std::vector<double>& x, std::vector<dou
       }
     }
   }
-
   f_combine = 0.0;
   grad.resize(variable_num_);
   fill(grad.begin(), grad.end(), 0.0);

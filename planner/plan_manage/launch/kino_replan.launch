@@ -1,19 +1,20 @@
 <launch>
-  <!-- size of map, change the size in x, y, z according to your application -->
-  <arg name="map_size_x" value="40.0"/>
-  <arg name="map_size_y" value="20.0"/>
-  <arg name="map_size_z" value=" 5.0"/>
 
-  <!-- topic of your odometry such as VIO or LIO -->
-  <arg name="odom_topic" value="/state_ukf/odom" />
+  <arg name="world_frame_id" default="world"/>
+  <arg name="odom_topic" default="/quadrotor/odom"/>
+  <arg name="cmd_topic" default="/quadrotor/position_cmd"/>  
+  <arg name="map_size_x" default="40"/>
+  <arg name="map_size_y" default="40"/>
+  <arg name="map_size_z" default="5"/>
+
 
   <!-- main algorithm params -->
   <include file="$(find plan_manage)/launch/kino_algorithm.xml">
-
-    <arg name="map_size_x_" value="$(arg map_size_x)"/>
-    <arg name="map_size_y_" value="$(arg map_size_y)"/>
-    <arg name="map_size_z_" value="$(arg map_size_z)"/>
-    <arg name="odometry_topic" value="$(arg odom_topic)"/>
+    <arg name="world_frame_id" value="$(arg world_frame_id)"/>
+    <arg name="map_size_x_"    value="$(arg map_size_x)"/>
+    <arg name="map_size_y_"    value="$(arg map_size_y)"/>
+    <arg name="map_size_z_"    value="$(arg map_size_z)"/>
+    <arg name="odom_topic"     value="$(arg odom_topic)"/>
 
     <!-- camera pose: transform of camera frame in the world frame -->
     <!-- depth topic: depth image, 640x480 by default -->
@@ -60,28 +61,25 @@
 
   <!-- trajectory server -->
   <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen">
-    <remap from="/position_cmd" to="planning/pos_cmd"/>
-
+    <remap from="/position_cmd" to="$(arg cmd_topic)"/>
     <remap from="/odom_world" to="$(arg odom_topic)"/>
     <param name="traj_server/time_forward" value="1.5" type="double"/>
+    <param name="world_frame_id" value ="$(arg world_frame_id)"/>
+
   </node>
 
-  <node pkg="waypoint_generator" name="waypoint_generator" type="waypoint_generator" output="screen">
-    <remap from="~odom" to="$(arg odom_topic)"/>        
-    <remap from="~goal" to="/move_base_simple/goal"/>
-    <remap from="~traj_start_trigger" to="/traj_start_trigger" />
-    <param name="waypoint_type" value="manual-lonely-waypoint"/>    
+  <node pkg="local_sensing_node" type="pcl_render_node" name="pcl_render_node" output="screen">
+    <rosparam command="load" file="$(find local_sensing_node)/params/camera.yaml" />
+    <param name="sensing_horizon"  value="5.0" />
+    <param name="sensing_rate"     value="30.0"/>
+    <param name="estimation_rate"  value="30.0"/>
+
+    <param name="map/x_size"     value="$(arg map_size_x)"/>
+    <param name="map/y_size"     value="$(arg map_size_y)"/>
+    <param name="map/z_size"     value="$(arg map_size_z)"/>
+
+    <remap from="~global_map" to="/map_generator/global_cloud"/>
+    <remap from="~odometry"   to="$(arg odom_topic)"/>
   </node>
-
-  <!-- use simulator -->
-  <include file="$(find plan_manage)/launch/simulator.xml">
-    <arg name="map_size_x_" value="$(arg map_size_x)"/>
-    <arg name="map_size_y_" value="$(arg map_size_y)"/>
-    <arg name="map_size_z_" value="$(arg map_size_z)"/>
-    <arg name="c_num" value="10"/>
-    <arg name="p_num" value="150"/>
-
-    <arg name="odometry_topic" value="$(arg odom_topic)" />
-  </include>
 
 </launch>

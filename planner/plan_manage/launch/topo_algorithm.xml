@@ -1,4 +1,5 @@
 <launch>
+  <arg name="world_frame_id"/>
   <arg name="map_size_x_"/>
   <arg name="map_size_y_"/>
   <arg name="map_size_z_"/>
@@ -90,7 +91,7 @@
     <param name="sdf_map/show_occ_time"  value="false"/>
     <param name="sdf_map/show_esdf_time" value="false"/>
     <param name="sdf_map/pose_type"     value="1"/>  
-    <param name="sdf_map/frame_id"      value="world"/>
+    <param name="sdf_map/frame_id"      value="$(arg world_frame_id)"/>
 
   <!-- planner manager -->
     <param name="manager/max_vel" value="$(arg max_vel)" type="double"/>

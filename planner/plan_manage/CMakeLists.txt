@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   geometry_msgs
-  quadrotor_msgs
+  kr_mav_msgs
   plan_env
   path_searching
   bspline

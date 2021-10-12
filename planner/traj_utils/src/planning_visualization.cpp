@@ -30,6 +30,9 @@ using std::endl;
 namespace fast_planner {
 PlanningVisualization::PlanningVisualization(ros::NodeHandle& nh) {
   node = nh;
+  nh.param<std::string>("world_frame_id", frame_id_, std::string("world"));
+
+  ROS_INFO_STREAM("VISUALIZATION FRAME ID IS " << frame_id_);
 
   traj_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/trajectory", 20);
   pubs_.push_back(traj_pub_);
@@ -59,7 +62,7 @@ PlanningVisualization::PlanningVisualization(ros::NodeHandle& nh) {
 void PlanningVisualization::displaySphereList(const vector<Eigen::Vector3d>& list, double resolution,
                                               const Eigen::Vector4d& color, int id, int pub_id) {
   visualization_msgs::Marker mk;
-  mk.header.frame_id = "world";
+  mk.header.frame_id = frame_id_;
   mk.header.stamp    = ros::Time::now();
   mk.type            = visualization_msgs::Marker::SPHERE_LIST;
   mk.action          = visualization_msgs::Marker::DELETE;
@@ -95,7 +98,7 @@ void PlanningVisualization::displaySphereList(const vector<Eigen::Vector3d>& lis
 void PlanningVisualization::displayCubeList(const vector<Eigen::Vector3d>& list, double resolution,
                                             const Eigen::Vector4d& color, int id, int pub_id) {
   visualization_msgs::Marker mk;
-  mk.header.frame_id = "world";
+  mk.header.frame_id = frame_id_;
   mk.header.stamp    = ros::Time::now();
   mk.type            = visualization_msgs::Marker::CUBE_LIST;
   mk.action          = visualization_msgs::Marker::DELETE;
@@ -133,7 +136,7 @@ void PlanningVisualization::displayLineList(const vector<Eigen::Vector3d>& list1
                                             const vector<Eigen::Vector3d>& list2, double line_width,
                                             const Eigen::Vector4d& color, int id, int pub_id) {
   visualization_msgs::Marker mk;
-  mk.header.frame_id = "world";
+  mk.header.frame_id = frame_id_;
   mk.header.stamp    = ros::Time::now();
   mk.type            = visualization_msgs::Marker::LINE_LIST;
   mk.action          = visualization_msgs::Marker::DELETE;

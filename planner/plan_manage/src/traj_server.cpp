@@ -26,7 +26,7 @@
 #include "bspline/non_uniform_bspline.h"
 #include "nav_msgs/Odometry.h"
 #include "plan_manage/Bspline.h"
-#include "quadrotor_msgs/PositionCommand.h"
+#include "kr_mav_msgs/PositionCommand.h"
 #include "std_msgs/Empty.h"
 #include "visualization_msgs/Marker.h"
 #include <ros/ros.h>
@@ -35,11 +35,11 @@ ros::Publisher cmd_vis_pub, pos_cmd_pub, traj_pub;
 
 nav_msgs::Odometry odom;
 
-quadrotor_msgs::PositionCommand cmd;
+kr_mav_msgs::PositionCommand cmd;
 // double pos_gain[3] = {5.7, 5.7, 6.2};
 // double vel_gain[3] = {3.4, 3.4, 4.0};
-double pos_gain[3] = { 5.7, 5.7, 6.2 };
-double vel_gain[3] = { 3.4, 3.4, 4.0 };
+double pos_gain[3] = { 7.4, 7.4, 10.4};
+double vel_gain[3] = { 4.8, 4.8,  6.0};
 
 using fast_planner::NonUniformBspline;
 
@@ -52,13 +52,14 @@ int traj_id_;
 // yaw control
 double last_yaw_;
 double time_forward_;
+std::string frame_id_;
 
 vector<Eigen::Vector3d> traj_cmd_, traj_real_;
 
 void displayTrajWithColor(vector<Eigen::Vector3d> path, double resolution, Eigen::Vector4d color,
                           int id) {
   visualization_msgs::Marker mk;
-  mk.header.frame_id = "world";
+  mk.header.frame_id = frame_id_;
   mk.header.stamp = ros::Time::now();
   mk.type = visualization_msgs::Marker::SPHERE_LIST;
   mk.action = visualization_msgs::Marker::DELETE;
@@ -95,7 +96,7 @@ void displayTrajWithColor(vector<Eigen::Vector3d> path, double resolution, Eigen
 void drawCmd(const Eigen::Vector3d& pos, const Eigen::Vector3d& vec, const int& id,
              const Eigen::Vector4d& color) {
   visualization_msgs::Marker mk_state;
-  mk_state.header.frame_id = "world";
+  mk_state.header.frame_id = frame_id_;
   mk_state.header.stamp = ros::Time::now();
   mk_state.id = id;
   mk_state.type = visualization_msgs::Marker::ARROW;
@@ -160,6 +161,7 @@ void bsplineCallback(plan_manage::BsplineConstPtr msg) {
   traj_.push_back(pos_traj);
   traj_.push_back(traj_[0].getDerivative());
   traj_.push_back(traj_[1].getDerivative());
+  traj_.push_back(traj_[2].getDerivative());
   traj_.push_back(yaw_traj);
   traj_.push_back(yaw_traj.getDerivative());
 
@@ -207,15 +209,16 @@ void cmdCallback(const ros::TimerEvent& e) {
   ros::Time time_now = ros::Time::now();
   double t_cur = (time_now - start_time_).toSec();
 
-  Eigen::Vector3d pos, vel, acc, pos_f;
+  Eigen::Vector3d pos, vel, acc, pos_f, jerk;
   double yaw, yawdot;
 
   if (t_cur < traj_duration_ && t_cur >= 0.0) {
-    pos = traj_[0].evaluateDeBoorT(t_cur);
-    vel = traj_[1].evaluateDeBoorT(t_cur);
-    acc = traj_[2].evaluateDeBoorT(t_cur);
-    yaw = traj_[3].evaluateDeBoorT(t_cur)[0];
-    yawdot = traj_[4].evaluateDeBoorT(t_cur)[0];
+    pos  = traj_[0].evaluateDeBoorT(t_cur);
+    vel  = traj_[1].evaluateDeBoorT(t_cur);
+    acc  = traj_[2].evaluateDeBoorT(t_cur);
+    jerk = traj_[3].evaluateDeBoorT(t_cur);
+    yaw  = traj_[4].evaluateDeBoorT(t_cur)[0];
+    yawdot = traj_[5].evaluateDeBoorT(t_cur)[0];
 
     double tf = min(traj_duration_, t_cur + 2.0);
     pos_f = traj_[0].evaluateDeBoorT(tf);
@@ -235,9 +238,9 @@ void cmdCallback(const ros::TimerEvent& e) {
   }
 
   cmd.header.stamp = time_now;
-  cmd.header.frame_id = "world";
-  cmd.trajectory_flag = quadrotor_msgs::PositionCommand::TRAJECTORY_STATUS_READY;
-  cmd.trajectory_id = traj_id_;
+  cmd.header.frame_id = frame_id_;
+  //cmd.trajectory_flag = kr_mav_msgs::PositionCommand::TRAJECTORY_STATUS_READY;
+  //cmd.trajectory_id = traj_id_;
 
   cmd.position.x = pos(0);
   cmd.position.y = pos(1);
@@ -250,6 +253,10 @@ void cmdCallback(const ros::TimerEvent& e) {
   cmd.acceleration.x = acc(0);
   cmd.acceleration.y = acc(1);
   cmd.acceleration.z = acc(2);
+
+  cmd.jerk.x = jerk(0);
+  cmd.jerk.y = jerk(1);
+  cmd.jerk.z = jerk(2);
 
   cmd.yaw = yaw;
   cmd.yaw_dot = yawdot;
@@ -290,7 +297,7 @@ int main(int argc, char** argv) {
   ros::Subscriber odom_sub = node.subscribe("/odom_world", 50, odomCallbck);
 
   cmd_vis_pub = node.advertise<visualization_msgs::Marker>("planning/position_cmd_vis", 10);
-  pos_cmd_pub = node.advertise<quadrotor_msgs::PositionCommand>("/position_cmd", 50);
+  pos_cmd_pub = node.advertise<kr_mav_msgs::PositionCommand>("/position_cmd", 50);
   traj_pub = node.advertise<visualization_msgs::Marker>("planning/travel_traj", 10);
 
   ros::Timer cmd_timer = node.createTimer(ros::Duration(0.01), cmdCallback);
@@ -306,6 +313,8 @@ int main(int argc, char** argv) {
   cmd.kv[2] = vel_gain[2];
 
   nh.param("traj_server/time_forward", time_forward_, -1.0);
+  nh.param<std::string>("world_frame_id", frame_id_, std::string("world"));
+
   last_yaw_ = 0.0;
 
   ros::Duration(1.0).sleep();
