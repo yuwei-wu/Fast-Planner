@@ -78,8 +78,8 @@
       <arg name="initial_position/x" value="$(arg initial_position/x)"/>
       <arg name="initial_position/y" value="$(arg initial_position/y)"/>
       <arg name="initial_position/z" value="$(arg initial_position/z)"/>
-      <arg name="c_num" value="10"/>
-      <arg name="p_num" value="150"/>
+      <arg name="c_num" value="0"/>
+      <arg name="p_num" value="200"/>
     </include>
   </group>
 

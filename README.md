@@ -46,5 +46,7 @@ notice:
 
 
 
+![](docs/map.png)
 
+* you can adjust the number and size of random maps with p\_num and c\_num in fast.launch. The default is set as cylinders.
 
