@@ -5,6 +5,8 @@
   <arg name="map_size_z_"/>
 
   <arg name="odom_topic"/>
+  <arg name="waypoints_topic"/>
+
   <arg name="camera_pose_topic"/>
   <arg name="depth_topic"/>
   <arg name="cloud_topic"/>
@@ -31,14 +33,11 @@
   <arg name="flight_type"/>
 
   <!-- main node -->
-  <node pkg="plan_manage" name="fast_planner_node" type="fast_planner_node" output="screen">
+  <node pkg="plan_manage" name="planner_node" type="planner_node" output="screen">
     <param name="world_frame_id" value ="$(arg world_frame_id)"/>
-    
-    <remap from="/odom_world" to="$(arg odom_topic)"/>
-    <remap from="/sdf_map/odom" to="$(arg odom_topic)"/>
-    <remap from="/sdf_map/cloud" to="$(arg cloud_topic)"/>
-    <remap from = "/sdf_map/pose"   to = "$(arg camera_pose_topic)"/> 
-    <remap from = "/sdf_map/depth" to = "$(arg depth_topic)"/>
+
+    <remap from="~odom" to="$(arg odom_topic)"/>
+    <remap from="~waypoints"  to="$(arg waypoints_topic)"/>
 
     <!-- replanning method -->
     <param name="planner_node/planner" value="1" type="int"/>
@@ -58,6 +57,13 @@
     <param name="fsm/waypoint2_x" value="$(arg point2_x)" type="double"/>
     <param name="fsm/waypoint2_y" value="$(arg point2_y)" type="double"/>
     <param name="fsm/waypoint2_z" value="$(arg point2_z)" type="double"/>
+
+
+    <!-- used for sdf map -->
+    <remap from ="~sdf_map_odom"  to="$(arg odom_topic)"/>
+    <remap from ="~sdf_map_cloud" to="$(arg cloud_topic)"/>
+    <remap from ="~sdf_map_pose"  to ="$(arg camera_pose_topic)"/> 
+    <remap from ="~sdf_map_depth" to ="$(arg depth_topic)"/>
 
     <param name="sdf_map/resolution"      value="0.1" /> 
     <param name="sdf_map/map_size_x"   value="$(arg map_size_x_)" /> 

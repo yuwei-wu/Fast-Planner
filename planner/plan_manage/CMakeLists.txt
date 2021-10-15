@@ -53,13 +53,13 @@ include_directories(
 )
 
 
-add_executable(fast_planner_node
+add_executable(planner_node
   src/fast_planner_node.cpp 
   src/kino_replan_fsm.cpp
   src/topo_replan_fsm.cpp
   src/planner_manager.cpp
   )
-target_link_libraries(fast_planner_node 
+target_link_libraries(planner_node 
   ${catkin_LIBRARIES}
   )
 

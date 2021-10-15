@@ -9,7 +9,7 @@
   <arg name="mass" default="0.5"/>
   <arg name="nodelet_manager_name" default="nodelet_manager_control"/>
   <arg name="planner" default="kino_replan"/>
-  <arg name="random_map" default="false"/>
+  <arg name="random_map" default="true"/>
 
   <arg name="initial_position/x" default="0.0"/>
   <arg name="initial_position/y" default="0.0"/>
@@ -85,12 +85,14 @@
 
 
   <!-- Fast planner -->
-  <include file="$(find plan_manage)/launch/$(arg planner).launch">
-    <arg name="world_frame_id" value="$(arg world_frame_id)"/>
-    <arg name="map_size_x" value="$(arg map_size_x)"/>
-    <arg name="map_size_y" value="$(arg map_size_y)"/>
-    <arg name="map_size_z" value="$(arg map_size_z)"/>
-  </include>
+  <group ns="$(arg mav_name)">
+    <include file="$(find plan_manage)/launch/$(arg planner).launch">
+      <arg name="world_frame_id" value="$(arg world_frame_id)"/>
+      <arg name="map_size_x" value="$(arg map_size_x)"/>
+      <arg name="map_size_y" value="$(arg map_size_y)"/>
+      <arg name="map_size_z" value="$(arg map_size_z)"/>
+    </include>
+  </group>
 
 
 

@@ -296,14 +296,14 @@ int main(int argc, char** argv) {
   ros::NodeHandle node;
   ros::NodeHandle nh("~");
 
-  ros::Subscriber bspline_sub = node.subscribe("planning/bspline", 10, bsplineCallback);
-  ros::Subscriber replan_sub = node.subscribe("planning/replan", 10, replanCallback);
-  ros::Subscriber new_sub = node.subscribe("planning/new", 10, newCallback);
-  ros::Subscriber odom_sub = node.subscribe("/odom_world", 50, odomCallbck);
+  ros::Subscriber bspline_sub = node.subscribe("planner_node/planning/bspline", 10, bsplineCallback);
+  ros::Subscriber replan_sub = node.subscribe("planner_node/planning/replan", 10, replanCallback);
+  ros::Subscriber new_sub = node.subscribe("planner_node/planning/new", 10, newCallback);
+  ros::Subscriber odom_sub = node.subscribe("odom", 50, odomCallbck);
 
-  cmd_vis_pub = node.advertise<visualization_msgs::Marker>("planning/position_cmd_vis", 10);
-  pos_cmd_pub = node.advertise<kr_mav_msgs::PositionCommand>("/position_cmd", 50);
-  traj_pub = node.advertise<visualization_msgs::Marker>("planning/travel_traj", 10);
+  cmd_vis_pub = node.advertise<visualization_msgs::Marker>("planner_node/vis/position_cmd_vis", 10);
+  pos_cmd_pub = node.advertise<kr_mav_msgs::PositionCommand>("position_cmd", 50);
+  traj_pub = node.advertise<visualization_msgs::Marker>("planner_node/vis/travel_traj", 10);
 
   ros::Timer cmd_timer = node.createTimer(ros::Duration(0.01), cmdCallback);
   ros::Timer vis_timer = node.createTimer(ros::Duration(0.25), visCallback);

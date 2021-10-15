@@ -34,22 +34,22 @@ PlanningVisualization::PlanningVisualization(ros::NodeHandle& nh) {
 
   ROS_INFO_STREAM("VISUALIZATION FRAME ID IS " << frame_id_);
 
-  traj_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/trajectory", 20);
+  traj_pub_ = node.advertise<visualization_msgs::Marker>("vis/trajectory", 20);
   pubs_.push_back(traj_pub_);
 
-  topo_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/topo_path", 20);
+  topo_pub_ = node.advertise<visualization_msgs::Marker>("vis/topo_path", 20);
   pubs_.push_back(topo_pub_);
 
-  predict_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/prediction", 20);
+  predict_pub_ = node.advertise<visualization_msgs::Marker>("vis/prediction", 20);
   pubs_.push_back(predict_pub_);
 
-  visib_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/visib_constraint", 20);
+  visib_pub_ = node.advertise<visualization_msgs::Marker>("vis/visib_constraint", 20);
   pubs_.push_back(visib_pub_);
 
-  frontier_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/frontier", 20);
+  frontier_pub_ = node.advertise<visualization_msgs::Marker>("vis/frontier", 20);
   pubs_.push_back(frontier_pub_);
 
-  yaw_pub_ = node.advertise<visualization_msgs::Marker>("/planning_vis/yaw", 20);
+  yaw_pub_ = node.advertise<visualization_msgs::Marker>("vis/yaw", 20);
   pubs_.push_back(yaw_pub_);
 
   last_topo_path1_num_     = 0;

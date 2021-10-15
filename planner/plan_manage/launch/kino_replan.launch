@@ -2,29 +2,36 @@
 
   <arg name="world_frame_id" default="world"/>
   <arg name="odom_topic" default="/quadrotor/odom"/>
-  <arg name="cmd_topic" default="/quadrotor/position_cmd"/>  
+  <arg name="cmd_topic" default="/quadrotor/position_cmd"/>
+  <arg name="waypoints_topic" default="/quadrotor/waypoints"/>
+
+  <!-- random map -->
+  <arg name="global_map_topic" default="/random_forest/global_cloud"/>
+
   <arg name="map_size_x" default="40"/>
   <arg name="map_size_y" default="40"/>
   <arg name="map_size_z" default="5"/>
 
-
   <!-- main algorithm params -->
   <include file="$(find plan_manage)/launch/kino_algorithm.xml">
     <arg name="world_frame_id" value="$(arg world_frame_id)"/>
+
     <arg name="map_size_x_"    value="$(arg map_size_x)"/>
     <arg name="map_size_y_"    value="$(arg map_size_y)"/>
     <arg name="map_size_z_"    value="$(arg map_size_z)"/>
-    <arg name="odom_topic"     value="$(arg odom_topic)"/>
+
+    <arg name="odom_topic"      value="$(arg odom_topic)"/>
+    <arg name="waypoints_topic" value="$(arg waypoints_topic)"/>
 
     <!-- camera pose: transform of camera frame in the world frame -->
     <!-- depth topic: depth image, 640x480 by default -->
     <!-- don't set cloud_topic if you already set these ones! -->
-    <arg name="camera_pose_topic" value="/pcl_render_node/camera_pose"/>
-    <arg name="depth_topic" value="/pcl_render_node/depth"/>
+    <arg name="camera_pose_topic" value="pcl_render_node/camera_pose"/>
+    <arg name="depth_topic" value="pcl_render_node/depth"/>
 
     <!-- topic of point cloud measurement, such as from LIDAR  -->
     <!-- don't set camera pose and depth, if you already set this one! -->
-    <arg name="cloud_topic" value="/pcl_render_node/cloud"/>
+    <arg name="cloud_topic" value="pcl_render_node/cloud"/>
 
     <!-- intrinsic params of the depth camera -->
     <arg name="cx" value="321.04638671875"/>
@@ -61,8 +68,8 @@
 
   <!-- trajectory server -->
   <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen">
-    <remap from="/position_cmd" to="$(arg cmd_topic)"/>
-    <remap from="/odom_world" to="$(arg odom_topic)"/>
+    <remap from="~position_cmd" to="$(arg cmd_topic)"/>
+    <remap from="~odom_topic" to="$(arg odom_topic)"/>
     <param name="traj_server/time_forward" value="1.5" type="double"/>
     <param name="world_frame_id" value ="$(arg world_frame_id)"/>
 
@@ -78,7 +85,7 @@
     <param name="map/y_size"     value="$(arg map_size_y)"/>
     <param name="map/z_size"     value="$(arg map_size_z)"/>
 
-    <remap from="~global_map" to="/map_generator/global_cloud"/>
+    <remap from="~global_map" to="$(arg global_map_topic)"/>
     <remap from="~odometry"   to="$(arg odom_topic)"/>
   </node>
 

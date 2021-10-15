@@ -26,8 +26,8 @@
   <arg name="flight_type"/>
 
   <!-- main node -->
-  <node pkg="plan_manage" name="fast_planner_node" type="fast_planner_node" output="screen">
-    <remap from="/odom_world" to="$(arg odometry_topic)"/>
+  <node pkg="plan_manage" name="planner_node" type="planner_node" output="screen">
+    <remap from="odom" to="$(arg odometry_topic)"/>
     <remap from="/sdf_map/odom" to="$(arg odometry_topic)"/>
     <remap from="/sdf_map/cloud" to="$(arg cloud_topic)"/>
     <remap from = "/sdf_map/pose"   to = "$(arg camera_pose_topic)"/> 

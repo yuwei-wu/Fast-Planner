@@ -3,3 +3,4 @@ map_generator/
 local_sensing/
 .rosinstall
 .rosinstall.bak
+.vscode/

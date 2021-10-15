@@ -27,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: random_map
+    SyncSource: global_random_map
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -50,7 +50,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 20
+      Plane Cell Count: 40
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/InteractiveMarkers
@@ -128,23 +128,43 @@ Visualization Manager:
           Invert Rainbow: true
           Max Color: 115; 210; 22
           Min Color: 239; 41; 41
-          Name: random_map
+          Name: global_random_map
           Position Transformer: XYZ
           Queue Size: 10
           Selectable: true
           Size (Pixels): 3
           Size (m): 0.10000000149011612
           Style: Squares
-          Topic: /map_generator/global_cloud
+          Topic: /random_forest/global_cloud
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: false
           Value: true
+      Enabled: true
+      Name: Map
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /quadrotor/planner_node/vis/trajectory
+          Name: traj
+          Namespaces:
+            "": true
+          Queue Size: 100
+          Value: true
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /quadrotor/planner_node/vis/position_cmd_vis
+          Name: cmd
+          Namespaces:
+            "": true
+          Queue Size: 100
+          Value: true
         - Alpha: 1
           Autocompute Intensity Bounds: true
           Autocompute Value Bounds:
-            Max Value: 1.350000023841858
-            Min Value: -0.949999988079071
+            Max Value: 2.3499999046325684
+            Min Value: -0.3499999940395355
             Value: true
           Axis: Z
           Channel Name: intensity
@@ -156,37 +176,17 @@ Visualization Manager:
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Min Color: 0; 0; 0
-          Name: sense_grid_map
+          Name: PointCloud2
           Position Transformer: XYZ
           Queue Size: 10
           Selectable: true
           Size (Pixels): 3
           Size (m): 0.10000000149011612
-          Style: Boxes
-          Topic: /sdf_map/occupancy
+          Style: Flat Squares
+          Topic: /quadrotor/planner_node/sdf_map/occupancy
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
-      Enabled: true
-      Name: Map
-    - Class: rviz/Group
-      Displays:
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /planning_vis/trajectory
-          Name: traj
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: true
-        - Class: rviz/Marker
-          Enabled: true
-          Marker Topic: /planning/position_cmd_vis
-          Name: cmd
-          Namespaces:
-            {}
-          Queue Size: 100
           Value: true
       Enabled: true
       Name: Planner
@@ -223,7 +223,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 14.280478477478027
+      Distance: 32.410911560058594
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -231,17 +231,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 2.1109981536865234
-        Y: -0.9837995171546936
-        Z: 1.4676529169082642
+        X: -9.767450332641602
+        Y: -2.9563181400299072
+        Z: -10.380626678466797
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.969796895980835
+      Pitch: 1.3297966718673706
       Target Frame: <Fixed Frame>
-      Yaw: 3.1103856563568115
+      Yaw: 3.0953891277313232
     Saved: ~
 Window Geometry:
   Displays:

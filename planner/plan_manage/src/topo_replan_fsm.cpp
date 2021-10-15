@@ -55,13 +55,12 @@ void TopoReplanFSM::init(ros::NodeHandle& nh) {
   exec_timer_   = nh.createTimer(ros::Duration(0.01), &TopoReplanFSM::execFSMCallback, this);
   safety_timer_ = nh.createTimer(ros::Duration(0.05), &TopoReplanFSM::checkCollisionCallback, this);
 
-  waypoint_sub_ =
-      nh.subscribe("/quadrotor/waypoints", 1, &TopoReplanFSM::waypointCallback, this);
-  odom_sub_ = nh.subscribe("/odom_world", 1, &TopoReplanFSM::odometryCallback, this);
+  waypoint_sub_ = nh.subscribe("waypoints", 1, &TopoReplanFSM::waypointCallback, this);
+  odom_sub_ = nh.subscribe("odom", 1, &TopoReplanFSM::odometryCallback, this);
 
-  replan_pub_  = nh.advertise<std_msgs::Empty>("/planning/replan", 20);
-  new_pub_     = nh.advertise<std_msgs::Empty>("/planning/new", 20);
-  bspline_pub_ = nh.advertise<plan_manage::Bspline>("/planning/bspline", 20);
+  replan_pub_  = nh.advertise<std_msgs::Empty>("planning/replan", 20);
+  new_pub_     = nh.advertise<std_msgs::Empty>("planning/new", 20);
+  bspline_pub_ = nh.advertise<plan_manage::Bspline>("planning/bspline", 20);
 }
 
 void TopoReplanFSM::waypointCallback(const nav_msgs::PathConstPtr& msg) {
