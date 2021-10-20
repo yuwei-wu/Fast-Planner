@@ -14,8 +14,7 @@ $ git clone git@github.com:yuwei-wu/Fast-Planner.git
 To simply set up mapping and simulator in the Fast-Planner
 
 ```console
-$ cd Fast-Planner
-$ wstool init && wstool merge fast.rosinstall && wstool update
+$ wstool init && wstool merge Fast-Planner/fast.rosinstall && wstool update
 ```
 
 To run the code:
