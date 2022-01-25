@@ -30,7 +30,7 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
     ${Eigen3_INCLUDE_DIRS} 
     ${PCL_INCLUDE_DIRS}
-    ${PROJECT_SOURCE_DIR}/utils/nlopt/include
+    #${PROJECT_SOURCE_DIR}/utils/nlopt/include
 )
 
 
@@ -41,5 +41,17 @@ add_library(bspline_opt
     )
 target_link_libraries( bspline_opt
     ${catkin_LIBRARIES} 
-    ${PROJECT_SOURCE_DIR}/utils/nlopt/lib
+    #${PROJECT_SOURCE_DIR}/utils/nlopt/lib
     )  
+
+
+install(TARGETS bspline_opt
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  PATTERN ".svn" EXCLUDE
+)
