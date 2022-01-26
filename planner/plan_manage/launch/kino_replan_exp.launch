@@ -1,0 +1,110 @@
+<launch>
+
+  <arg name="world_frame_id" default="world"/>
+  <arg name="odom_topic" default="/dragonfly27/vio/odometry"/>
+  <arg name="cmd_topic" default="/dragonfly27/position_cmd"/>
+  <arg name="waypoints_topic" default="/dragonfly27/waypoints"/>
+
+  <arg name="random_map" default="true"/>
+
+
+  <!-- random map -->
+  <arg name="global_map_topic" default="/random_forest/global_cloud"/>
+
+  <arg name="map_size_x" default="40"/>
+  <arg name="map_size_y" default="40"/>
+  <arg name="map_size_z" default="5"/>
+
+  <!-- main algorithm params -->
+  <include file="$(find plan_manage)/launch/kino_algorithm.xml">
+    <arg name="world_frame_id" value="$(arg world_frame_id)"/>
+
+    <arg name="map_size_x_"    value="$(arg map_size_x)"/>
+    <arg name="map_size_y_"    value="$(arg map_size_y)"/>
+    <arg name="map_size_z_"    value="$(arg map_size_z)"/>
+
+    <arg name="odom_topic"      value="$(arg odom_topic)"/>
+    <arg name="waypoints_topic" value="$(arg waypoints_topic)"/>
+
+    <!-- camera pose: transform of camera frame in the world frame -->
+    <!-- depth topic: depth image, 640x480 by default -->
+    <!-- don't set cloud_topic if you already set these ones! -->
+    <arg name="camera_pose_topic" value="pcl_render_node/camera_pose"/>
+    <arg name="depth_topic" value="pcl_render_node/depth"/>
+
+    <!-- topic of point cloud measurement, such as from LIDAR  -->
+    <!-- don't set camera pose and depth, if you already set this one! -->
+    <arg name="cloud_topic" value="pcl_render_node/cloud"/>
+
+    <!-- intrinsic params of the depth camera -->
+    <arg name="cx" value="321.04638671875"/>
+    <arg name="cy" value="243.44969177246094"/>
+    <arg name="fx" value="387.229248046875"/>
+    <arg name="fy" value="387.229248046875"/>
+
+    <!-- maximum velocity and acceleration the drone will reach -->
+    <arg name="max_vel" value="1.5" />
+    <arg name="max_acc" value="1.5" />
+
+    <!-- 1: use 2D Nav Goal to select goal  -->
+    <!-- 2: use global waypoints below  -->
+    <arg name="flight_type" value="1" />
+    
+    <!-- global waypoints -->
+    <!-- If flight_type is set to 2, the drone will travel these waypoints one by one -->
+    <arg name="point_num" value="2" />
+
+    <arg name="point0_x" value="19.0" />
+    <arg name="point0_y" value="0.0" />
+    <arg name="point0_z" value="1.0" />
+
+    <!-- set more waypoints if you need -->
+    <arg name="point1_x" value="-19.0" />
+    <arg name="point1_y" value="0.0" />
+    <arg name="point1_z" value="1.0" />
+
+    <arg name="point2_x" value="0.0" />
+    <arg name="point2_y" value="19.0" />
+    <arg name="point2_z" value="1.0" />
+    
+  </include>
+
+  <!-- trajectory server -->
+  <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen">
+    <remap from="~position_cmd" to="$(arg cmd_topic)"/>
+    <remap from="~odom_topic" to="$(arg odom_topic)"/>
+    <param name="traj_server/time_forward" value="1.5" type="double"/>
+    <param name="world_frame_id" value ="$(arg world_frame_id)"/>
+
+  </node>
+
+
+  <node pkg="local_sensing_node" type="pcl_render_node" name="pcl_render_node" output="screen">
+    <rosparam command="load" file="$(find local_sensing_node)/params/camera.yaml" />
+    <param name="sensing_horizon"  value="5.0" />
+    <param name="sensing_rate"     value="30.0"/>
+    <param name="estimation_rate"  value="30.0"/>
+
+    <param name="map/x_size"     value="$(arg map_size_x)"/>
+    <param name="map/y_size"     value="$(arg map_size_y)"/>
+    <param name="map/z_size"     value="$(arg map_size_z)"/>
+
+    <remap from="~global_map" to="$(arg global_map_topic)"/>
+    <remap from="~odometry"   to="$(arg odom_topic)"/>
+  </node>
+
+
+    <!-- Random map generator -->
+  <group if="$(arg random_map)">
+    <include file="$(find map_generator)/launch/random_map.launch">
+      <arg name="map_frame_id" value="$(arg world_frame_id)"/>
+      <arg name="map_size_x" value="$(arg map_size_x)"/>
+      <arg name="map_size_y" value="$(arg map_size_y)"/>
+      <arg name="map_size_z" value="$(arg map_size_z)"/>
+      <arg name="c_num" value="0"/>
+      <arg name="p_num" value="100"/>
+    </include>
+  </group>
+
+
+</launch>
