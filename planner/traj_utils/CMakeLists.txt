@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(traj_utils)
 ADD_COMPILE_OPTIONS(-std=c++11 )
 ADD_COMPILE_OPTIONS(-std=c++14 )
+
 find_package(catkin REQUIRED COMPONENTS
   bspline
-  bspline_opt
   path_searching
   poly_traj
   roscpp
@@ -18,7 +18,7 @@ find_package(PCL 1.7 REQUIRED)
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES traj_utils
- CATKIN_DEPENDS path_searching bspline bspline_opt poly_traj
+ CATKIN_DEPENDS path_searching bspline poly_traj 
 #  DEPENDS system_lib
 )
 
@@ -40,14 +40,3 @@ add_library( traj_utils
 target_link_libraries( traj_utils
     ${catkin_LIBRARIES} 
     )  
-
-install(TARGETS traj_utils
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-)
-
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  PATTERN ".svn" EXCLUDE
-)

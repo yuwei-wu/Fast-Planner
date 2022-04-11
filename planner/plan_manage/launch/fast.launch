@@ -2,8 +2,8 @@
   <arg name="mav_name" default="quadrotor"/>
   <arg name="mav_type" default="hummingbird"/>
   <arg name="world_frame_id" default="simulator"/>
-  <arg name="sim" default="1"/>
-  <arg name="vicon" default="1"/>
+  <arg name="sim" default="true"/>
+  <arg name="vicon" default="false"/>
   <arg name="vicon_fps" default="100"/>
   <arg name="slow_baud_rate" default="true"/>
   <arg name="mass" default="0.5"/>
@@ -20,7 +20,7 @@
   <arg name="color/a" default="0.7"/>
   <!-- size of map, change the size in x, y, z according to your application -->
   <arg name="map_size_x" value="40.0"/>
-  <arg name="map_size_y" value="20.0"/>
+  <arg name="map_size_y" value="40.0"/>
   <arg name="map_size_z" value=" 5.0"/>
 
 
@@ -75,9 +75,8 @@
       <arg name="map_size_x" value="$(arg map_size_x)"/>
       <arg name="map_size_y" value="$(arg map_size_y)"/>
       <arg name="map_size_z" value="$(arg map_size_z)"/>
-      <arg name="initial_position/x" value="$(arg initial_position/x)"/>
-      <arg name="initial_position/y" value="$(arg initial_position/y)"/>
-      <arg name="initial_position/z" value="$(arg initial_position/z)"/>
+      <arg name="init_state_x" value="$(arg initial_position/x)"/>
+      <arg name="init_state_y" value="$(arg initial_position/y)"/>
       <arg name="c_num" value="0"/>
       <arg name="p_num" value="200"/>
     </include>

@@ -89,7 +89,9 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
     cur_node = open_set_.top();
 
     // Terminate?
+
     bool reach_horizon = (cur_node->state.head(3) - start_pt).norm() >= horizon_;
+
     bool near_end = abs(cur_node->index(0) - end_index(0)) <= tolerance &&
                     abs(cur_node->index(1) - end_index(1)) <= tolerance &&
                     abs(cur_node->index(2) - end_index(2)) <= tolerance;
@@ -199,7 +201,7 @@ int KinodynamicAstar::search(Eigen::Vector3d start_pt, Eigen::Vector3d start_v, 
         if (fabs(pro_v(0)) > max_vel_ || fabs(pro_v(1)) > max_vel_ || fabs(pro_v(2)) > max_vel_)
         {
           if (init_search)
-            std::cout << "vel" << std::endl;
+            std::cout << "vel is" << pro_v << std::endl;
           continue;
         }
 

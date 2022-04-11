@@ -5,16 +5,13 @@ This is the revised version on Ubuntu 20.04/ROS noetic, which can work with the 
 Independent planning module, code revised from fast planner: https://github.com/HKUST-Aerial-Robotics/Fast-Planner
 
 
-Clone the repo:
+Clone the repo and complie it:
 
 ```console
-$ git clone git@github.com:yuwei-wu/Fast-Planner.git
-
-```
-To simply set up mapping and simulator in the Fast-Planner
-
-```console
+$ git clone -b kr git@github.com:yuwei-wu/Fast-Planner.git
 $ wstool init && wstool merge Fast-Planner/fast.rosinstall && wstool update
+$ cd ..
+$ catkin build
 ```
 
 To run the code:

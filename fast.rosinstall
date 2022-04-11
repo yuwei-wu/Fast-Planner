@@ -1,4 +1,4 @@
-- git: {local-name: plan_env, uri: 'git@github.com:tyuezhan/plan_env.git'}
-- git: {local-name: map_generator, uri: 'git@github.com:yuwei-wu/map_generator.git', version: 'kr'}
-- git: {local-name: local_sensing, uri: 'git@github.com:yuwei-wu/local_sensing.git', version: 'kr'}
+- git: {local-name: kr_mav_control, uri: 'git@github.com:KumarRobotics/kr_mav_control.git'}
+- git: {local-name: nlopt, uri: 'git@github.com:ethz-asl/nlopt.git'}
+- git: {local-name: waypoint_navigation_plugin, uri: 'git@github.com:KumarRobotics/waypoint_navigation_plugin.git'}
 
