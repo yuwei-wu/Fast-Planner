@@ -101,7 +101,8 @@ private:
   ros::NodeHandle node_;
   ros::Timer exec_timer_, safety_timer_, vis_timer_, test_something_timer_;
   ros::Subscriber waypoint_sub_, odom_sub_;
-  ros::Publisher replan_pub_, new_pub_, bspline_pub_;
+  ros::Publisher traj_goal_pub_;
+  std::string srv_name_;
 
   /* helper functions */
   bool callKinodynamicReplan();        // front-end and back-end method

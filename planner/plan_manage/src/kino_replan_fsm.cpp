@@ -22,10 +22,10 @@
 */
 
 
-
-
 #include <plan_manage/kino_replan_fsm.h>
-
+#include <kr_tracker_msgs/Transition.h>
+#include <kr_tracker_msgs/BsplineTrackerAction.h>
+#include <std_srvs/Trigger.h>
 namespace fast_planner {
 
 void KinoReplanFSM::init(ros::NodeHandle& nh) {
@@ -38,6 +38,7 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
   nh.param("fsm/flight_type", target_type_, -1);
   nh.param("fsm/thresh_replan", replan_thresh_, -1.0);
   nh.param("fsm/thresh_no_replan", no_replan_thresh_, -1.0);
+  nh.param("srv_name", srv_name_, std::string(" "));
 
 
   if (target_type_ == TARGET_TYPE::PRESET_TARGET){
@@ -63,9 +64,9 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
       nh.subscribe("waypoints", 1, &KinoReplanFSM::waypointCallback, this);
   odom_sub_ = nh.subscribe("odom", 1, &KinoReplanFSM::odometryCallback, this);
 
-  replan_pub_  = nh.advertise<std_msgs::Empty>("planning/replan", 10);
-  new_pub_     = nh.advertise<std_msgs::Empty>("planning/new", 10);
-  bspline_pub_ = nh.advertise<plan_manage::Bspline>("planning/bspline", 10);
+
+  traj_goal_pub_ = nh.advertise<kr_tracker_msgs::BsplineTrackerActionGoal>("tracker_cmd", 10);
+
 }
 
 void KinoReplanFSM::waypointCallback(const nav_msgs::PathConstPtr& msg) {
@@ -213,11 +214,11 @@ void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
         return;
 
       } else if ((end_pt_ - pos).norm() < no_replan_thresh_) {
-        // cout << "near end" << endl;
+        //cout << "near end" << endl;
         return;
 
       } else if ((info->start_pos_ - pos).norm() < replan_thresh_) {
-        // cout << "near start" << endl;
+        //cout << "near start" << endl;
         return;
 
       } else {
@@ -239,8 +240,12 @@ void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
       start_yaw_(1) = info->yawdot_traj_.evaluateDeBoorT(t_cur)[0];
       start_yaw_(2) = info->yawdotdot_traj_.evaluateDeBoorT(t_cur)[0];
 
-      std_msgs::Empty replan_msg;
-      replan_pub_.publish(replan_msg);
+      kr_tracker_msgs::BsplineTrackerActionGoal replan_msg;
+      replan_msg.goal.status = 1;
+      traj_goal_pub_.publish(replan_msg);
+
+      std_srvs::Trigger trg;
+      ros::service::call(srv_name_, trg);
 
       bool success = callKinodynamicReplan();
       if (success) {
@@ -312,8 +317,13 @@ void KinoReplanFSM::checkCollisionCallback(const ros::TimerEvent& e) {
         cout << "goal near collision, keep retry" << endl;
         changeFSMExecState(REPLAN_TRAJ, "FSM");
 
-        std_msgs::Empty emt;
-        replan_pub_.publish(emt);
+        kr_tracker_msgs::BsplineTrackerActionGoal replan_msg;
+        replan_msg.goal.status = 1;
+        traj_goal_pub_.publish(replan_msg);
+
+        std_srvs::Trigger trg;
+        ros::service::call(srv_name_, trg);
+
       }
     }
   }
@@ -339,42 +349,48 @@ bool KinoReplanFSM::callKinodynamicReplan() {
 
     planner_manager_->planYaw(start_yaw_);
 
-    auto info = &planner_manager_->local_data_;
+    LocalTrajData *locdat = &planner_manager_->local_data_;
 
     /* publish traj */
-    plan_manage::Bspline bspline;
-    bspline.order      = 3;
-    bspline.start_time = info->start_time_;
-    bspline.traj_id    = info->traj_id_;
+    kr_tracker_msgs::BsplineTrackerActionGoal bspline_msg;
 
-    Eigen::MatrixXd pos_pts = info->position_traj_.getControlPoint();
+    bspline_msg.goal.order      = 3;
+    bspline_msg.goal.start_time = locdat->start_time_;
+    bspline_msg.goal.traj_id    = locdat->traj_id_;
+
+    Eigen::MatrixXd pos_pts = locdat->position_traj_.getControlPoint();
 
     for (int i = 0; i < pos_pts.rows(); ++i) {
       geometry_msgs::Point pt;
       pt.x = pos_pts(i, 0);
       pt.y = pos_pts(i, 1);
       pt.z = pos_pts(i, 2);
-      bspline.pos_pts.push_back(pt);
+      bspline_msg.goal.pos_pts.push_back(pt);
     }
 
-    Eigen::VectorXd knots = info->position_traj_.getKnot();
+    Eigen::VectorXd knots = locdat->position_traj_.getKnot();
     for (int i = 0; i < knots.rows(); ++i) {
-      bspline.knots.push_back(knots(i));
+      bspline_msg.goal.knots.push_back(knots(i));
     }
 
-    Eigen::MatrixXd yaw_pts = info->yaw_traj_.getControlPoint();
+    Eigen::MatrixXd yaw_pts = locdat->yaw_traj_.getControlPoint();
     for (int i = 0; i < yaw_pts.rows(); ++i) {
       double yaw = yaw_pts(i, 0);
-      bspline.yaw_pts.push_back(yaw);
+      bspline_msg.goal.yaw_pts.push_back(yaw);
     }
-    bspline.yaw_dt = info->yaw_traj_.getInterval();
+    bspline_msg.goal.yaw_dt = locdat->yaw_traj_.getInterval();
 
-    bspline_pub_.publish(bspline);
+    cout << "!!!!!!!!!!! send the command" << endl;
+    bspline_msg.goal.status = 2;
+    traj_goal_pub_.publish(bspline_msg);
+
+    std_srvs::Trigger trg;
+    ros::service::call(srv_name_, trg);
 
     /* visulization */
     auto plan_data = &planner_manager_->plan_data_;
     visualization_->drawGeometricPath(plan_data->kino_path_, 0.075, Eigen::Vector4d(1, 1, 0, 0.4));
-    visualization_->drawBspline(info->position_traj_, 0.1, Eigen::Vector4d(1.0, 0, 0.0, 1), true, 0.2,
+    visualization_->drawBspline(locdat->position_traj_, 0.1, Eigen::Vector4d(1.0, 0, 0.0, 1), true, 0.2,
                                 Eigen::Vector4d(1, 0, 0, 1));
 
     return true;

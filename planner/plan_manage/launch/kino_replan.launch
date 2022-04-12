@@ -4,12 +4,13 @@
   <arg name="odom_topic" default="/quadrotor/odom"/>
   <arg name="cmd_topic" default="/quadrotor/position_cmd"/>
   <arg name="waypoints_topic" default="/quadrotor/waypoints"/>
+  <arg name="mav_name" />
 
   <!-- random map -->
   <arg name="global_map_topic" default="/random_forest/global_cloud"/>
 
   <arg name="map_size_x" default="40"/>
-  <arg name="map_size_y" default="40"/>
+  <arg name="map_size_y" default="20"/>
   <arg name="map_size_z" default="5"/>
 
   <!-- main algorithm params -->
@@ -22,6 +23,9 @@
 
     <arg name="odom_topic"      value="$(arg odom_topic)"/>
     <arg name="waypoints_topic" value="$(arg waypoints_topic)"/>
+
+    <arg name="tracker_topic" value="/$(arg mav_name)/trackers_manager/bspline_tracker/BsplineTracker/goal"/>
+    <arg name="srv_name"  value="/$(arg mav_name)/mav_services/bspline_tracker"/>
 
     <!-- camera pose: transform of camera frame in the world frame -->
     <!-- depth topic: depth image, 640x480 by default -->
@@ -66,14 +70,6 @@
     
   </include>
 
-  <!-- trajectory server -->
-  <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen">
-    <remap from="~position_cmd" to="$(arg cmd_topic)"/>
-    <remap from="~odom_topic" to="$(arg odom_topic)"/>
-    <param name="traj_server/time_forward" value="1.5" type="double"/>
-    <param name="world_frame_id" value ="$(arg world_frame_id)"/>
-
-  </node>
 
   <node pkg="local_sensing_node" type="pcl_render_node" name="pcl_render_node" output="screen">
     <rosparam command="load" file="$(find local_sensing_node)/params/camera.yaml" />

@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
   kr_mav_msgs
+  kr_tracker_msgs
   plan_env
   path_searching
   bspline
@@ -64,9 +65,3 @@ add_executable(planner_node
 target_link_libraries(planner_node 
   ${catkin_LIBRARIES}
   )
-
-add_executable(traj_server src/traj_server.cpp)
-target_link_libraries(traj_server ${catkin_LIBRARIES})
-add_dependencies(traj_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-

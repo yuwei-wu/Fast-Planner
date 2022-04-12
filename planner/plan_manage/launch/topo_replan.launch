@@ -56,14 +56,6 @@
     <arg name="point2_z" value="1.0" />
   </include>
 
-  <!-- trajectory server -->
-  <node pkg="plan_manage" name="traj_server" type="traj_server" output="screen">
-    <remap from="position_cmd" to="planning/pos_cmd"/>
-
-    <remap from="odom" to="$(arg odom_topic)"/>
-    <param name="traj_server/time_forward" value="1.5" type="double"/>
-  </node>
-
   <!-- use simulator -->
   <include file="$(find plan_manage)/launch/simulator.xml">
     <arg name="map_size_x_" value="$(arg map_size_x)"/>

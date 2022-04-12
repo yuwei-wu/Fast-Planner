@@ -32,12 +32,18 @@
 
   <arg name="flight_type"/>
 
+  <arg name="tracker_topic"/>
+  <arg name="srv_name"/>
+
   <!-- main node -->
   <node pkg="plan_manage" name="planner_node" type="planner_node" output="screen">
     <param name="world_frame_id" value ="$(arg world_frame_id)"/>
 
     <remap from="~odom" to="$(arg odom_topic)"/>
     <remap from="~waypoints"  to="$(arg waypoints_topic)"/>
+    <remap from="~tracker_cmd"  to="$(arg tracker_topic)"/>
+    <param name="srv_name"     value="$(arg srv_name)"/>
+
 
     <!-- replanning method -->
     <param name="planner_node/planner" value="1" type="int"/>
