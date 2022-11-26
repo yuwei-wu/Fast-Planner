@@ -450,8 +450,8 @@ bool KinodynamicAstar::computeShotTraj(Eigen::VectorXd state1, Eigen::VectorXd s
       }
     }
 
-    if (coord(0) < origin_(0) || coord(0) >= map_size_3d_(0) || coord(1) < origin_(1) || coord(1) >= map_size_3d_(1) ||
-        coord(2) < origin_(2) || coord(2) >= map_size_3d_(2))
+
+    if (!edt_environment_->sdf_map_->isInMap(coord))
     {
       return false;
     }
@@ -644,6 +644,7 @@ void KinodynamicAstar::getSamples(double& ts, vector<Eigen::Vector3d>& point_set
                                   vector<Eigen::Vector3d>& start_end_derivatives)
 {
   /* ---------- path duration ---------- */
+  point_set.clear();
   double T_sum = 0.0;
   if (is_shot_succ_)
     T_sum += t_shot_;
@@ -652,8 +653,11 @@ void KinodynamicAstar::getSamples(double& ts, vector<Eigen::Vector3d>& point_set
   {
     T_sum += node->duration;
     node = node->parent;
+    //cout << "node->state.head(3):" << node->state.head(3) << endl;
+
   }
   // cout << "duration:" << T_sum << endl;
+  // cout << "t_shot_: " << t_shot_ << endl;
 
   // Calculate boundary vel and acc
   Eigen::Vector3d end_vel, end_acc;
@@ -675,14 +679,17 @@ void KinodynamicAstar::getSamples(double& ts, vector<Eigen::Vector3d>& point_set
     end_acc = path_nodes_.back()->input;
   }
 
-  // Get point samples
+  //Get point samples
   int seg_num = floor(T_sum / ts);
   seg_num = max(8, seg_num);
   ts = T_sum / double(seg_num);
   bool sample_shot_traj = is_shot_succ_;
   node = path_nodes_.back();
+  // cout << "node->state " << node->state << endl;
+  // cout << "seg_num " <<  seg_num   << endl;
 
-  for (double ti = T_sum; ti > -1e-5; ti -= ts)
+  
+  for (double ti = T_sum; ti > -1e-8; ti -= ts)
   {
     if (sample_shot_traj)
     {
@@ -700,10 +707,12 @@ void KinodynamicAstar::getSamples(double& ts, vector<Eigen::Vector3d>& point_set
       }
 
       point_set.push_back(coord);
-      t -= ts;
+      // cout << "coord: " << coord.transpose() << endl;
+      // cout << "t: " << t << endl;
 
+      t -= ts;
       /* end of segment */
-      if (t < -1e-5)
+      if (t < -1e-8)
       {
         sample_shot_traj = false;
         if (node->parent != NULL)
@@ -720,17 +729,27 @@ void KinodynamicAstar::getSamples(double& ts, vector<Eigen::Vector3d>& point_set
       stateTransit(x0, xt, ut, t);
 
       point_set.push_back(xt.head(3));
+      // cout << "x0.head(3): " << x0.head(3).transpose() << endl;
+      // cout << "t: " << t << endl;
+      // cout << "xt.head(3): " << xt.head(3).transpose()  << endl;
+
+
       t -= ts;
 
-      // cout << "t: " << t << ", t acc: " << T_accumulate << endl;
-      if (t < -1e-5 && node->parent->parent != NULL)
+
+      if (t < -1e-8 && node->parent->parent != NULL)
       {
-        node = node->parent;
-        t += node->duration;
+        while ( t <= -node->parent->duration)
+        {
+          node = node->parent;
+          t += node->duration;
+        }
       }
     }
   }
   reverse(point_set.begin(), point_set.end());
+
+
 
   // calculate start acc
   Eigen::Vector3d start_acc;

@@ -187,7 +187,7 @@ public:
 
 struct PlanParameters {
   /* planning algorithm parameters */
-  double max_vel_, max_acc_, max_jerk_;  // physical limits
+  double max_vel_, max_acc_, max_jerk_, max_dyaw_, max_ddyaw_;  // physical limits
   double local_traj_len_;                // local replanning trajectory length
   double ctrl_pt_dist;                   // distance between adjacient B-spline
                                          // control points

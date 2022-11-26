@@ -57,11 +57,15 @@ public:
   bool topoReplan(bool collide);
 
   void planYaw(const Eigen::Vector3d& start_yaw);
+  void planYaw(const Eigen::Vector3d &start_yaw,const double &end_yaw);
+  void refineEndYaw(double &start_yaw, double &end_yaw);
 
   void initPlanModules(ros::NodeHandle& nh);
   void setGlobalWaypoints(vector<Eigen::Vector3d>& waypoints);
 
   bool checkTrajCollision(double& distance);
+
+  bool EmergencyStop(Eigen::Vector3d stop_pos);
 
   PlanParameters pp_;
   LocalTrajData local_data_;
@@ -98,6 +102,10 @@ private:
   // heading planning
   void calcNextYaw(const double& last_yaw, double& yaw);
 
+  void calcNextYaw(Eigen::Vector3d &next_yaw, 
+                   Eigen::Vector3d &last_yaw, 
+                   Eigen::Vector3d &dir, 
+                   double dt);
   // !SECTION stable
 
   // SECTION developing

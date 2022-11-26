@@ -73,7 +73,7 @@ class KinoReplanFSM {
 
 private:
   /* ---------- flag ---------- */
-  enum FSM_EXEC_STATE { INIT, WAIT_TARGET, GEN_NEW_TRAJ, REPLAN_TRAJ, EXEC_TRAJ, REPLAN_NEW };
+  enum FSM_EXEC_STATE { INIT, WAIT_TARGET, INIT_ROTATE, GEN_NEW_TRAJ, REPLAN_TRAJ, EXEC_TRAJ, EMERGENCY_STOP};
   enum TARGET_TYPE { MANUAL_TARGET = 1, PRESET_TARGET = 2, REFENCE_PATH = 3 };
 
   /* planning utils */
@@ -85,6 +85,7 @@ private:
   double no_replan_thresh_, replan_thresh_;
   double waypoints_[50][3];
   int waypoint_num_;
+  double fail_cnt_ = 0;
 
   /* planning data */
   bool trigger_, have_target_, have_odom_;
@@ -92,10 +93,16 @@ private:
 
   Eigen::Vector3d odom_pos_, odom_vel_;  // odometry state
   Eigen::Quaterniond odom_orient_;
+  ros::Time odom_time_, plan_stime_;
+  double odom_yaw_;
 
   Eigen::Vector3d start_pt_, start_vel_, start_acc_, start_yaw_;  // start state
-  Eigen::Vector3d end_pt_, end_vel_;                              // target state
+  Eigen::Vector3d end_pt_, end_vel_;
+  double end_yaw_;                              // target state
   int current_wp_;
+
+  bool flag_escape_emergency_;
+
 
   /* ROS utils */
   ros::NodeHandle node_;
@@ -110,12 +117,14 @@ private:
                                        // optimization; 1: new, 2: replan
   void changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call);
   void printFSMExecState();
+  bool callEmergencyStop();
 
+  
   void setGoal();
   /* ROS functions */
   void execFSMCallback(const ros::TimerEvent& e);
   void checkCollisionCallback(const ros::TimerEvent& e);
-  void waypointCallback(const nav_msgs::PathConstPtr& msg);
+  void waypointCallback(const geometry_msgs::PoseStampedPtr& msg);
   void odometryCallback(const nav_msgs::OdometryConstPtr& msg);
 
 public:

@@ -1,17 +1,21 @@
 <launch>
 
   <arg name="world_frame_id" default="world"/>
-  <arg name="odom_topic" default="/quadrotor/odom"/>
-  <arg name="cmd_topic" default="/quadrotor/position_cmd"/>
+  <arg name="odom_topic" default="/ddk/ground_truth/odom"/>
+  <arg name="cmd_topic" default="/ddk/position_cmd"/>
   <arg name="waypoints_topic" default="/quadrotor/waypoints"/>
   <arg name="mav_name" />
 
   <!-- random map -->
-  <arg name="global_map_topic" default="/random_forest/global_cloud"/>
+  <!-- <arg name="global_map_topic" default="/random_forest/global_cloud"/> -->
 
-  <arg name="map_size_x" default="40"/>
-  <arg name="map_size_y" default="20"/>
-  <arg name="map_size_z" default="5"/>
+  <arg name="map_size_x" default="42"/>
+  <arg name="map_size_y" default="42"/>
+  <arg name="map_size_z" default="2.3"/>
+
+  <arg name="map_origin_x" value="-2.0"/>
+  <arg name="map_origin_y" value="-2.0"/>
+  <arg name="map_origin_z" value="-0.1"/>
 
   <!-- main algorithm params -->
   <include file="$(find plan_manage)/launch/kino_algorithm.xml">
@@ -20,6 +24,12 @@
     <arg name="map_size_x_"    value="$(arg map_size_x)"/>
     <arg name="map_size_y_"    value="$(arg map_size_y)"/>
     <arg name="map_size_z_"    value="$(arg map_size_z)"/>
+
+
+    <arg name="map_origin_x" value="$(arg map_origin_x)"/>
+    <arg name="map_origin_y" value="$(arg map_origin_y)"/>
+    <arg name="map_origin_z" value="$(arg map_origin_z)"/>
+
 
     <arg name="odom_topic"      value="$(arg odom_topic)"/>
     <arg name="waypoints_topic" value="$(arg waypoints_topic)"/>
@@ -31,21 +41,21 @@
     <!-- depth topic: depth image, 640x480 by default -->
     <!-- don't set cloud_topic if you already set these ones! -->
     <arg name="camera_pose_topic" value="pcl_render_node/camera_pose"/>
-    <arg name="depth_topic" value="pcl_render_node/depth"/>
+    <arg name="depth_topic" value="/ddk/rgbd/depth/image_raw"/>
 
     <!-- topic of point cloud measurement, such as from LIDAR  -->
     <!-- don't set camera pose and depth, if you already set this one! -->
-    <arg name="cloud_topic" value="pcl_render_node/cloud"/>
+    <arg name="cloud_topic" value="no_use"/>
 
     <!-- intrinsic params of the depth camera -->
-    <arg name="cx" value="321.04638671875"/>
-    <arg name="cy" value="243.44969177246094"/>
-    <arg name="fx" value="387.229248046875"/>
-    <arg name="fy" value="387.229248046875"/>
+    <arg name="cx" value="376.5"/>
+    <arg name="cy" value="240.5"/>
+    <arg name="fx" value="315.50122168521807"/>
+    <arg name="fy" value="315.50122168521807"/>
 
     <!-- maximum velocity and acceleration the drone will reach -->
-    <arg name="max_vel" value="3.0" />
-    <arg name="max_acc" value="2.0" />
+    <arg name="max_vel" value="0.6" />
+    <arg name="max_acc" value="0.8" />
 
     <!-- 1: use 2D Nav Goal to select goal  -->
     <!-- 2: use global waypoints below  -->
@@ -69,20 +79,5 @@
     <arg name="point2_z" value="1.0" />
     
   </include>
-
-
-  <node pkg="local_sensing_node" type="pcl_render_node" name="pcl_render_node" output="screen">
-    <rosparam command="load" file="$(find local_sensing_node)/params/camera.yaml" />
-    <param name="sensing_horizon"  value="5.0" />
-    <param name="sensing_rate"     value="30.0"/>
-    <param name="estimation_rate"  value="30.0"/>
-
-    <param name="map/x_size"     value="$(arg map_size_x)"/>
-    <param name="map/y_size"     value="$(arg map_size_y)"/>
-    <param name="map/z_size"     value="$(arg map_size_z)"/>
-
-    <remap from="~global_map" to="$(arg global_map_topic)"/>
-    <remap from="~odometry"   to="$(arg odom_topic)"/>
-  </node>
 
 </launch>

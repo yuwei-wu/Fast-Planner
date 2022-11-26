@@ -3,6 +3,9 @@
   <arg name="map_size_x_"/>
   <arg name="map_size_y_"/>
   <arg name="map_size_z_"/>
+  <arg name="map_origin_x"/>
+  <arg name="map_origin_y"/>
+  <arg name="map_origin_z"/>
 
   <arg name="odom_topic"/>
   <arg name="waypoints_topic"/>
@@ -75,11 +78,18 @@
     <param name="sdf_map/map_size_x"   value="$(arg map_size_x_)" /> 
     <param name="sdf_map/map_size_y"   value="$(arg map_size_y_)" /> 
     <param name="sdf_map/map_size_z"   value="$(arg map_size_z_)" /> 
-    <param name="sdf_map/local_update_range_x"  value="5.5" /> 
-    <param name="sdf_map/local_update_range_y"  value="5.5" /> 
-    <param name="sdf_map/local_update_range_z"  value="4.5" /> 
-    <param name="sdf_map/obstacles_inflation"     value="0.099" /> 
-    <param name="sdf_map/local_bound_inflate"    value="0.0"/>
+
+
+    <param name="map_origin_x" value="$(arg map_origin_x)"/>
+    <param name="map_origin_y" value="$(arg map_origin_y)"/>
+    <param name="map_origin_z" value="$(arg map_origin_z)"/>
+    <param name="set_origin" value="true"/>
+
+    <param name="sdf_map/local_update_range_x"  value="6" /> 
+    <param name="sdf_map/local_update_range_y"  value="6" /> 
+    <param name="sdf_map/local_update_range_z"  value="3.5" /> 
+    <param name="sdf_map/obstacles_inflation"     value="0.2" /> 
+    <param name="sdf_map/local_bound_inflate"    value="0.1"/>
     <param name="sdf_map/local_map_margin" value="50"/>
     <param name="sdf_map/ground_height"        value="-1.0"/>
     <!-- camera parameter -->
@@ -94,7 +104,7 @@
     <param name="sdf_map/depth_filter_mindist"   value="0.2"/>
     <param name="sdf_map/depth_filter_margin"    value="2"/>
     <param name="sdf_map/k_depth_scaling_factor" value="1000.0"/>
-    <param name="sdf_map/skip_pixel" value="2"/>
+    <param name="sdf_map/skip_pixel" value="1"/>
     <!-- local fusion -->
     <param name="sdf_map/p_hit"  value="0.65"/>
     <param name="sdf_map/p_miss" value="0.35"/>
@@ -105,21 +115,24 @@
     <param name="sdf_map/max_ray_length" value="4.5"/>
 
     <param name="sdf_map/esdf_slice_height" value="0.3"/>
-    <param name="sdf_map/visualization_truncate_height"   value="2.49"/>
-    <param name="sdf_map/virtual_ceil_height"   value="2.5"/>
+    <param name="sdf_map/visualization_truncate_height"   value="2.0"/>
+    <param name="sdf_map/virtual_ceil_height"   value="2.1"/>
     <param name="sdf_map/show_occ_time"  value="false"/>
     <param name="sdf_map/show_esdf_time" value="false"/>
-    <param name="sdf_map/pose_type"     value="1"/>  
+    <param name="sdf_map/pose_type"     value="2"/>  
     <param name="sdf_map/frame_id"      value="$(arg world_frame_id)"/>
 
   <!-- planner manager -->
     <param name="manager/max_vel" value="$(arg max_vel)" type="double"/>
     <param name="manager/max_acc" value="$(arg max_acc)" type="double"/>
-    <param name="manager/max_jerk" value="4" type="double"/>
+    <param name="manager/max_dyaw" value="$(eval 60 * 3.1415926 / 180.0)" type="double"/>
+    <param name="manager/max_ddyaw" value="$(eval 90 * 3.1415926 / 180.0)" type="double"/>
+
+    <param name="manager/max_jerk" value="2" type="double"/>
     <param name="manager/dynamic_environment" value="0" type="int"/>
     <param name="manager/local_segment_length" value="6.0" type="double"/>
     <param name="manager/clearance_threshold" value="0.2" type="double"/>
-    <param name="manager/control_points_distance" value="0.5" type="double"/>
+    <param name="manager/control_points_distance" value="0.3" type="double"/>
 
     <param name="manager/use_geometric_path" value="false" type="bool"/>
     <param name="manager/use_kinodynamic_path" value="true" type="bool"/>
@@ -128,9 +141,10 @@
 
   <!-- kinodynamic path searching -->
     <param name="search/max_tau" value="0.6" type="double"/>
-    <param name="search/init_max_tau" value="0.8" type="double"/>
+    <param name="search/init_max_tau" value="0.6" type="double"/>
     <param name="search/max_vel" value="$(arg max_vel)" type="double"/>
     <param name="search/max_acc" value="$(arg max_acc)" type="double"/>
+    
     <param name="search/w_time" value="10.0" type="double"/>
     <param name="search/horizon" value="7.0" type="double"/>
     <param name="search/lambda_heu" value="5.0" type="double"/>
@@ -138,12 +152,12 @@
     <param name="search/time_resolution" value="0.8" type="double"/>
     <param name="search/margin" value="0.2" type="double"/>
     <param name="search/allocate_num" value="100000" type="int"/>
-    <param name="search/check_num" value="5" type="int"/>
+    <param name="search/check_num" value="10" type="int"/>
 
   <!-- trajectory optimization -->
     <param name="optimization/lambda1" value="10.0" type="double"/>
     <param name="optimization/lambda2" value="5.0" type="double"/>
-    <param name="optimization/lambda3" value="0.00001" type="double"/>
+    <param name="optimization/lambda3" value="0.0001" type="double"/>
     <param name="optimization/lambda4" value="0.01" type="double"/>
     <param name="optimization/lambda7" value="100.0" type="double"/>
     <param name="optimization/dist0" value="0.4" type="double"/>
@@ -164,10 +178,6 @@
     <param name="optimization/max_iteration_time4" value="0.003" type="double"/>
 
     <param name="optimization/order" value="3" type="int"/>
-
-    <param name="bspline/limit_vel" value="$(arg max_vel)" type="double"/>
-    <param name="bspline/limit_acc" value="$(arg max_acc)" type="double"/>
-    <param name="bspline/limit_ratio" value="1.1" type="double"/>
 
     <param name="bspline/limit_vel" value="$(arg max_vel)" type="double"/>
     <param name="bspline/limit_acc" value="$(arg max_acc)" type="double"/>

@@ -37,6 +37,25 @@ void SDFMap::initMap(ros::NodeHandle& nh) {
   node_.param("sdf_map/map_size_x", x_size, -1.0);
   node_.param("sdf_map/map_size_y", y_size, -1.0);
   node_.param("sdf_map/map_size_z", z_size, -1.0);
+
+  bool set_origin;
+  node_.param("set_origin", set_origin, false);
+  node_.param("ground_height", mp_.ground_height_, 0.0);
+
+
+  if(set_origin)
+  {
+    nh.param("map_origin_x", mp_.map_origin_(0), -1.0);
+    nh.param("map_origin_y", mp_.map_origin_(1), -1.0);
+    nh.param("map_origin_z", mp_.map_origin_(2), -1.0);
+    
+  }else
+  {
+    mp_.map_origin_ = Eigen::Vector3d(-x_size / 2.0, -y_size / 2.0, mp_.ground_height_);
+  }
+
+
+
   node_.param("sdf_map/local_update_range_x", mp_.local_update_range_(0), -1.0);
   node_.param("sdf_map/local_update_range_y", mp_.local_update_range_(1), -1.0);
   node_.param("sdf_map/local_update_range_z", mp_.local_update_range_(2), -1.0);
@@ -74,11 +93,11 @@ void SDFMap::initMap(ros::NodeHandle& nh) {
   node_.param("sdf_map/frame_id", mp_.frame_id_, string("world"));
   node_.param("sdf_map/local_bound_inflate", mp_.local_bound_inflate_, 1.0);
   node_.param("sdf_map/local_map_margin", mp_.local_map_margin_, 1);
-  node_.param("sdf_map/ground_height", mp_.ground_height_, 1.0);
 
   mp_.local_bound_inflate_ = max(mp_.resolution_, mp_.local_bound_inflate_);
   mp_.resolution_inv_ = 1 / mp_.resolution_;
-  mp_.map_origin_ = Eigen::Vector3d(-x_size / 2.0, -y_size / 2.0, mp_.ground_height_);
+
+
   mp_.map_size_ = Eigen::Vector3d(x_size, y_size, z_size);
 
   mp_.prob_hit_log_ = logit(mp_.p_hit_);
@@ -123,7 +142,7 @@ void SDFMap::initMap(ros::NodeHandle& nh) {
   md_.tmp_buffer2_ = vector<double>(buffer_size, 0);
   md_.raycast_num_ = 0;
 
-  md_.proj_points_.resize(640 * 480 / mp_.skip_pixel_ / mp_.skip_pixel_);
+  md_.proj_points_.resize(752 * 480 / mp_.skip_pixel_ / mp_.skip_pixel_);
   md_.proj_points_cnt = 0;
 
   /* init callback */
@@ -178,6 +197,14 @@ void SDFMap::initMap(ros::NodeHandle& nh) {
   md_.update_num_ = 0;
   md_.max_esdf_time_ = 0.0;
   md_.max_fuse_time_ = 0.0;
+
+
+  md_.cam2body_ << 0.0, 0.0, 1.0, 0.05,
+                  -1.0, 0.0, 0.0, 0.0,
+                  0.0, -1.0, 0.0, 0.0,
+                  0.0, 0.0, 0.0, 1.0;
+
+
 
   rand_noise_ = uniform_real_distribution<double>(-0.2, 0.2);
   rand_noise2_ = normal_distribution<double>(0, 0.2);
@@ -379,9 +406,8 @@ void SDFMap::projectDepthImage() {
 
   double depth;
 
-  Eigen::Matrix3d camera_r = md_.camera_q_.toRotationMatrix();
-
-  // cout << "rotate: " << md_.camera_q_.toRotationMatrix() << endl;
+  Eigen::Matrix3d camera_r = md_.camera_r_m_;
+  // cout << "rotate: " << md_.camera_r_m_ << endl;
   // std::cout << "pos in proj: " << md_.camera_pos_ << std::endl;
 
   if (!mp_.use_depth_filter_) {
@@ -398,7 +424,7 @@ void SDFMap::projectDepthImage() {
 
         proj_pt = camera_r * proj_pt + md_.camera_pos_;
 
-        if (u == 320 && v == 240) std::cout << "depth: " << depth << std::endl;
+        if (u == 752 && v == 240) std::cout << "depth: " << depth << std::endl;
         md_.proj_points_[md_.proj_points_cnt++] = proj_pt;
       }
     }
@@ -412,9 +438,9 @@ void SDFMap::projectDepthImage() {
       Eigen::Vector3d pt_cur, pt_world, pt_reproj;
 
       Eigen::Matrix3d last_camera_r_inv;
-      last_camera_r_inv = md_.last_camera_q_.inverse();
+      last_camera_r_inv = md_.last_camera_r_m_.inverse();
       const double inv_factor = 1.0 / mp_.k_depth_scaling_factor_;
-
+  
       for (int v = mp_.depth_filter_margin_; v < rows - mp_.depth_filter_margin_; v += mp_.skip_pixel_) {
         row_ptr = md_.depth_image_.ptr<uint16_t>(v) + mp_.depth_filter_margin_;
 
@@ -437,6 +463,7 @@ void SDFMap::projectDepthImage() {
           }
 
           // project to world frame
+
           pt_cur(0) = (u - mp_.cx_) * depth / mp_.fx_;
           pt_cur(1) = (v - mp_.cy_) * depth / mp_.fy_;
           pt_cur(2) = depth;
@@ -446,9 +473,10 @@ void SDFMap::projectDepthImage() {
           //   pt_world = closetPointInMap(pt_world, md_.camera_pos_);
           // }
 
-          md_.proj_points_[md_.proj_points_cnt++] = pt_world;
 
+          md_.proj_points_[md_.proj_points_cnt++] = pt_world;
           // check consistency with last image, disabled...
+
           if (false) {
             pt_reproj = last_camera_r_inv * (pt_world - md_.last_camera_pos_);
             double uu = pt_reproj.x() * mp_.fx_ / pt_reproj.z() + mp_.cx_;
@@ -469,9 +497,8 @@ void SDFMap::projectDepthImage() {
   }
 
   /* maintain camera pose for consistency check */
-
   md_.last_camera_pos_ = md_.camera_pos_;
-  md_.last_camera_q_ = md_.camera_q_;
+  md_.last_camera_r_m_ = md_.camera_r_m_;
   md_.last_depth_image_ = md_.depth_image_;
 }
 
@@ -836,8 +863,9 @@ void SDFMap::depthPoseCallback(const sensor_msgs::ImageConstPtr& img,
   md_.camera_pos_(0) = pose->pose.position.x;
   md_.camera_pos_(1) = pose->pose.position.y;
   md_.camera_pos_(2) = pose->pose.position.z;
-  md_.camera_q_ = Eigen::Quaterniond(pose->pose.orientation.w, pose->pose.orientation.x,
-                                     pose->pose.orientation.y, pose->pose.orientation.z);
+  md_.camera_r_m_ = Eigen::Quaterniond(pose->pose.orientation.w, pose->pose.orientation.x,
+                                       pose->pose.orientation.y, pose->pose.orientation.z)
+                        .toRotationMatrix();
   if (isInMap(md_.camera_pos_)) {
     md_.has_odom_ = true;
     md_.update_num_ += 1;
@@ -1285,11 +1313,24 @@ void SDFMap::getSurroundPts(const Eigen::Vector3d& pos, Eigen::Vector3d pts[2][2
 void SDFMap::depthOdomCallback(const sensor_msgs::ImageConstPtr& img,
                                const nav_msgs::OdometryConstPtr& odom) {
   /* get pose */
-  md_.camera_pos_(0) = odom->pose.pose.position.x;
-  md_.camera_pos_(1) = odom->pose.pose.position.y;
-  md_.camera_pos_(2) = odom->pose.pose.position.z;
-  md_.camera_q_ = Eigen::Quaterniond(odom->pose.pose.orientation.w, odom->pose.pose.orientation.x,
-                                     odom->pose.pose.orientation.y, odom->pose.pose.orientation.z);
+  Eigen::Quaterniond body_q = Eigen::Quaterniond(odom->pose.pose.orientation.w,
+                                                 odom->pose.pose.orientation.x,
+                                                 odom->pose.pose.orientation.y,
+                                                 odom->pose.pose.orientation.z);
+  Eigen::Matrix3d body_r_m = body_q.toRotationMatrix();
+  Eigen::Matrix4d body2world;
+  body2world.block<3, 3>(0, 0) = body_r_m;
+  body2world(0, 3) = odom->pose.pose.position.x;
+  body2world(1, 3) = odom->pose.pose.position.y;
+  body2world(2, 3) = odom->pose.pose.position.z;
+  body2world(3, 3) = 1.0;
+
+  Eigen::Matrix4d cam_T = body2world * md_.cam2body_;
+  md_.camera_pos_(0) = cam_T(0, 3);
+  md_.camera_pos_(1) = cam_T(1, 3);
+  md_.camera_pos_(2) = cam_T(2, 3);
+  md_.camera_r_m_ = cam_T.block<3, 3>(0, 0);
+
 
   /* get depth image */
   cv_bridge::CvImagePtr cv_ptr;
@@ -1302,6 +1343,7 @@ void SDFMap::depthOdomCallback(const sensor_msgs::ImageConstPtr& img,
   md_.occ_need_update_ = true;
 }
 
+
 void SDFMap::depthCallback(const sensor_msgs::ImageConstPtr& img) {
   std::cout << "depth: " << img->header.stamp << std::endl;
 }
@@ -1313,5 +1355,8 @@ void SDFMap::poseCallback(const geometry_msgs::PoseStampedConstPtr& pose) {
   md_.camera_pos_(1) = pose->pose.position.y;
   md_.camera_pos_(2) = pose->pose.position.z;
 }
+
+
+
 
 // SDFMap
