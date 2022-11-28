@@ -30,22 +30,13 @@ add_message_files(
   FILES
   Bspline.msg
   )
-
-## Generate services in the 'srv' folder
-add_service_files(
- FILES
- Bspline2PosCmd.srv
-)
   
 # Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
   std_msgs
   geometry_msgs
-  kr_mav_msgs
-  kr_tracker_msgs
 )
-
 
 # catkin_package(CATKIN_DEPENDS message_runtime)
 catkin_package(
@@ -71,15 +62,6 @@ add_executable(planner_node
   src/topo_replan_fsm.cpp
   src/planner_manager.cpp
   )
-add_executable(bspline_to_pos_cmd_node 
-  src/bspline_to_pos_cmd_service.cpp
-  )
-
-  add_dependencies(bspline_to_pos_cmd_node ${bspline_to_pos_cmd_node_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(planner_node 
   ${catkin_LIBRARIES}
   )
-  target_link_libraries(bspline_to_pos_cmd_node
-  ${catkin_LIBRARIES}
-)

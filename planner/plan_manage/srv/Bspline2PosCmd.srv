@@ -1,3 +1,0 @@
-kr_tracker_msgs/BsplineTrackerActionGoal bspline_msg
----
-kr_mav_msgs/PositionCommand pos_cmd
