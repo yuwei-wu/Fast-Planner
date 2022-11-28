@@ -1,6 +1,5 @@
 #include "ros/ros.h"
-#include "bspline/non_uniform_bspline.h"
-#include "plan_manage/Bspline.h"
+
 #include "plan_manage/Bspline2PosCmd.h"
 #include <kr_tracker_msgs/BsplineTrackerAction.h>
 #include "kr_mav_msgs/PositionCommand.h"
