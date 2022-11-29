@@ -65,7 +65,7 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
   odom_sub_ = nh.subscribe("odom", 1, &KinoReplanFSM::odometryCallback, this);
 
 
-  traj_goal_pub_ = nh.advertise<kr_tracker_msgs::BsplineTrackerActionGoal>("bspline_traj", 10);
+  traj_goal_pub_ = nh.advertise<kr_tracker_msgs::BsplineTrackerActionGoal>("bspline", 10);
 
 }
 
