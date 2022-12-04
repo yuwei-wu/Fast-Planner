@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="world_frame_id" default="world"/>
-  <arg name="odom_topic" default="/quadrotor/odom"/>
+  <arg name="odom_topic" default="/airsim_node/drone_1/odom_local_ned"/>
   <arg name="cmd_topic" default="/quadrotor/position_cmd"/>
   <arg name="waypoints_topic" default="/quadrotor/waypoints"/>
   <arg name="mav_name" />
@@ -30,8 +30,8 @@
     <!-- camera pose: transform of camera frame in the world frame -->
     <!-- depth topic: depth image, 640x480 by default -->
     <!-- don't set cloud_topic if you already set these ones! -->
-    <arg name="camera_pose_topic" value="pcl_render_node/camera_pose"/>
-    <arg name="depth_topic" value="pcl_render_node/depth"/>
+    <arg name="camera_pose_topic" value="/airsim_conversion/camera_pose"/>
+    <arg name="depth_topic" value="/airsim_node/drone_1/depth_vis/DepthVis"/>
 
     <!-- topic of point cloud measurement, such as from LIDAR  -->
     <!-- don't set camera pose and depth, if you already set this one! -->
