@@ -1,7 +1,7 @@
 <launch>
   <arg name="mav_name" default="quadrotor"/>
   <arg name="mav_type" default="hummingbird"/>
-  <arg name="world_frame_id" default="/world_enu"/>
+  <arg name="world_frame_id" default="world_enu"/>
   <arg name="sim" default="true"/>
   <arg name="vicon" default="false"/>
   <arg name="vicon_fps" default="100"/>
