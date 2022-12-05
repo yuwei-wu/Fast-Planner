@@ -31,11 +31,11 @@
     <!-- depth topic: depth image, 640x480 by default -->
     <!-- don't set cloud_topic if you already set these ones! -->
     <arg name="camera_pose_topic" value="/quad_pail/converted_camera_pose"/>
-    <arg name="depth_topic" value="/airsim_node/drone_1/depth_planar/DepthPlanar"/>
+    <arg name="depth_topic" value="/airsim_node/drone_1/depth_vis/DepthVis"/>
 
     <!-- topic of point cloud measurement, such as from LIDAR  -->
     <!-- don't set camera pose and depth, if you already set this one! -->
-    <arg name="cloud_topic" value="pcl_render_node/cloud"/>
+    <arg name="cloud_topic" value="/airsim_node/drone_1/DepthPerspective/registered/points"/>
 
     <!-- intrinsic params of the depth camera -->
     <arg name="cx" value="321.04638671875"/>
