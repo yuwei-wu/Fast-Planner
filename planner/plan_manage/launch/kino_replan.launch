@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="world_frame_id" default="world"/>
-  <arg name="odom_topic" default="/airsim_node/drone_1/odom_local_ned"/>
+  <arg name="odom_topic" default="/airsim_node/drone_1/odom_local_enu"/>
   <arg name="cmd_topic" default="/quadrotor/position_cmd"/>
   <arg name="waypoints_topic" default="/quadrotor/waypoints"/>
   <arg name="mav_name" />
