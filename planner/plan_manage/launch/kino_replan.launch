@@ -11,7 +11,7 @@
 
   <arg name="map_size_x" default="40"/>
   <arg name="map_size_y" default="20"/>
-  <arg name="map_size_z" default="5"/>
+  <arg name="map_size_z" default="10"/>
 
   <!-- main algorithm params -->
   <include file="$(find plan_manage)/launch/kino_algorithm.xml">
