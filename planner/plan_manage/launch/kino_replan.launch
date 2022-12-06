@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="world_frame_id" default="world_enu"/>
+  <arg name="world_frame_id" default="drone_1"/>
   <arg name="odom_topic" default="/airsim_node/drone_1/odom_local_enu"/>
   <arg name="cmd_topic" default="/quadrotor/position_cmd"/>
   <arg name="waypoints_topic" default="/quadrotor/waypoints"/>
@@ -31,7 +31,7 @@
     <!-- depth topic: depth image, 640x480 by default -->
     <!-- don't set cloud_topic if you already set these ones! -->
     <arg name="camera_pose_topic" value="/quad_pail/converted_camera_pose"/>
-    <arg name="depth_topic" value="/airsim_node/drone_1/depth_vis/DepthVis"/>
+    <arg name="depth_topic" value="/airsim_node/drone_1/depth_perspective/DepthPerspective"/>
 
     <!-- topic of point cloud measurement, such as from LIDAR  -->
     <!-- don't set camera pose and depth, if you already set this one! -->
@@ -71,7 +71,7 @@
   </include>
 
 
-  <node pkg="local_sensing_node" type="pcl_render_node" name="pcl_render_node" output="screen">
+  <!-- <node pkg="local_sensing_node" type="pcl_render_node" name="pcl_render_node" output="screen">
     <rosparam command="load" file="$(find local_sensing_node)/params/camera.yaml" />
     <param name="sensing_horizon"  value="5.0" />
     <param name="sensing_rate"     value="30.0"/>
@@ -83,6 +83,6 @@
 
     <remap from="~global_map" to="$(arg global_map_topic)"/>
     <remap from="~odometry"   to="$(arg odom_topic)"/>
-  </node>
+  </node> -->
 
 </launch>
