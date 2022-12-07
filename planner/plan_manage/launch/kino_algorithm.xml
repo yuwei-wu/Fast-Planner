@@ -1,5 +1,5 @@
 <launch>
-  <arg name="world_frame_id" default="drone_1"/>
+  <arg name="world_frame_id" default="world_enu"/>
   <arg name="map_size_x_"/>
   <arg name="map_size_y_"/>
   <arg name="map_size_z_"/>
