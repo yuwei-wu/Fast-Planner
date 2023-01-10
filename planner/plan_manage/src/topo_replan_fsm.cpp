@@ -23,7 +23,7 @@
 
 #include <plan_manage/topo_replan_fsm.h>
 #include <kr_tracker_msgs/Transition.h>
-#include <kr_tracker_msgs/BsplineTrackerAction.h>
+#include <kr_tracker_msgs/PolyTrackerAction.h>
 #include <std_srvs/Trigger.h>
 namespace fast_planner
 {
@@ -61,7 +61,7 @@ namespace fast_planner
     waypoint_sub_ = nh.subscribe("waypoints", 1, &TopoReplanFSM::waypointCallback, this);
     odom_sub_ = nh.subscribe("odom", 1, &TopoReplanFSM::odometryCallback, this);
 
-    traj_goal_pub_ = nh.advertise<kr_tracker_msgs::BsplineTrackerActionGoal>("tracker_cmd", 10);
+    traj_goal_pub_ = nh.advertise<kr_tracker_msgs::PolyTrackerActionGoal>("tracker_cmd", 10);
   }
 
   void TopoReplanFSM::waypointCallback(const nav_msgs::PathConstPtr &msg)
@@ -214,13 +214,6 @@ namespace fast_planner
       start_yaw_(0) = atan2(rot_x(1), rot_x(0));
       start_yaw_(1) = start_yaw_(2) = 0.0;
 
-      kr_tracker_msgs::BsplineTrackerActionGoal replan_msg;
-      replan_msg.goal.status = 0;
-      traj_goal_pub_.publish(replan_msg);
-
-      std_srvs::Trigger trg;
-      ros::service::call(srv_name_, trg);
-
       /* topo path finding and optimization */
       bool success = callTopologicalTraj(1);
       if (success)
@@ -308,14 +301,6 @@ namespace fast_planner
       start_pt_ = info->position_traj_.evaluateDeBoorT(t_cur);
       start_vel_ = info->velocity_traj_.evaluateDeBoorT(t_cur);
       start_acc_ = info->acceleration_traj_.evaluateDeBoorT(t_cur);
-
-      /* inform server */
-      kr_tracker_msgs::BsplineTrackerActionGoal replan_msg;
-      replan_msg.goal.status = 0;
-      traj_goal_pub_.publish(replan_msg);
-
-      std_srvs::Trigger trg;
-      ros::service::call(srv_name_, trg);
 
       // bool success = callSearchAndOptimization();
       bool success = callTopologicalTraj(1);
@@ -422,13 +407,6 @@ namespace fast_planner
         {
           ROS_ERROR("current traj %lf m to collision, emergency stop!", dist);
 
-          kr_tracker_msgs::BsplineTrackerActionGoal replan_msg;
-          replan_msg.goal.status = 1;
-          traj_goal_pub_.publish(replan_msg);
-
-          std_srvs::Trigger trg;
-          ros::service::call(srv_name_, trg);
-
           have_target_ = false;
           changeFSMExecState(WAIT_TARGET, "SAFETY");
         }
@@ -465,16 +443,14 @@ namespace fast_planner
       /* publish newest trajectory to server */
 
       /* publish traj */
-      kr_tracker_msgs::BsplineTrackerActionGoal bspline_msg;
+      kr_tracker_msgs::PolyTrackerActionGoal bspline_msg;
 
-      bspline_msg.goal.order = 3;
-      bspline_msg.goal.start_time = locdat->start_time_;
-      bspline_msg.goal.traj_id = locdat->traj_id_;
+      bspline_msg.goal.t_start = locdat->start_time_;
+      bspline_msg.goal.cpts_status = 2;
 
       Eigen::MatrixXd pos_pts = locdat->position_traj_.getControlPoint();
 
-      for (int i = 0; i < pos_pts.rows(); ++i)
-      {
+      for (int i = 0; i < pos_pts.rows(); ++i) {
         geometry_msgs::Point pt;
         pt.x = pos_pts(i, 0);
         pt.y = pos_pts(i, 1);
@@ -483,20 +459,16 @@ namespace fast_planner
       }
 
       Eigen::VectorXd knots = locdat->position_traj_.getKnot();
-      for (int i = 0; i < knots.rows(); ++i)
-      {
+      for (int i = 0; i < knots.rows(); ++i) {
         bspline_msg.goal.knots.push_back(knots(i));
       }
 
       Eigen::MatrixXd yaw_pts = locdat->yaw_traj_.getControlPoint();
-      for (int i = 0; i < yaw_pts.rows(); ++i)
-      {
+      for (int i = 0; i < yaw_pts.rows(); ++i) {
         double yaw = yaw_pts(i, 0);
         bspline_msg.goal.yaw_pts.push_back(yaw);
       }
-      bspline_msg.goal.yaw_dt = locdat->yaw_traj_.getInterval();
 
-      bspline_msg.goal.status = 2;
       traj_goal_pub_.publish(bspline_msg);
 
       std_srvs::Trigger trg;

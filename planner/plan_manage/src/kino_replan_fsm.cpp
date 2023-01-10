@@ -24,7 +24,7 @@
 
 #include <plan_manage/kino_replan_fsm.h>
 #include <kr_tracker_msgs/Transition.h>
-#include <kr_tracker_msgs/BsplineTrackerAction.h>
+#include <kr_tracker_msgs/PolyTrackerAction.h>
 #include <std_srvs/Trigger.h>
 namespace fast_planner {
 
@@ -65,7 +65,7 @@ void KinoReplanFSM::init(ros::NodeHandle& nh) {
   odom_sub_ = nh.subscribe("odom", 1, &KinoReplanFSM::odometryCallback, this);
 
 
-  traj_goal_pub_ = nh.advertise<kr_tracker_msgs::BsplineTrackerActionGoal>("tracker_cmd", 10);
+  traj_goal_pub_ = nh.advertise<kr_tracker_msgs::PolyTrackerActionGoal>("tracker_cmd", 10);
 
 }
 
@@ -98,11 +98,15 @@ void KinoReplanFSM::setGoal(){
     have_target_ = false;
     return;
   }
+  
+  while(current_wp_ < waypoint_num_)
+  {
+    end_pt_(0)  = waypoints_[current_wp_][0];
+    end_pt_(1)  = waypoints_[current_wp_][1];
+    end_pt_(2)  = waypoints_[current_wp_][2];
+    current_wp_ += 1;
+  }
 
-  end_pt_(0)  = waypoints_[current_wp_][0];
-  end_pt_(1)  = waypoints_[current_wp_][1];
-  end_pt_(2)  = waypoints_[current_wp_][2];
-  current_wp_ += 1;
 
   ROS_INFO_STREAM("current_wp_  is : " << current_wp_);
 
@@ -240,13 +244,6 @@ void KinoReplanFSM::execFSMCallback(const ros::TimerEvent& e) {
       start_yaw_(1) = info->yawdot_traj_.evaluateDeBoorT(t_cur)[0];
       start_yaw_(2) = info->yawdotdot_traj_.evaluateDeBoorT(t_cur)[0];
 
-      kr_tracker_msgs::BsplineTrackerActionGoal replan_msg;
-      replan_msg.goal.status = 1;
-      traj_goal_pub_.publish(replan_msg);
-
-      std_srvs::Trigger trg;
-      ros::service::call(srv_name_, trg);
-
       bool success = callKinodynamicReplan();
       if (success) {
         changeFSMExecState(EXEC_TRAJ, "FSM");
@@ -317,13 +314,6 @@ void KinoReplanFSM::checkCollisionCallback(const ros::TimerEvent& e) {
         cout << "goal near collision, keep retry" << endl;
         changeFSMExecState(REPLAN_TRAJ, "FSM");
 
-        kr_tracker_msgs::BsplineTrackerActionGoal replan_msg;
-        replan_msg.goal.status = 1;
-        traj_goal_pub_.publish(replan_msg);
-
-        std_srvs::Trigger trg;
-        ros::service::call(srv_name_, trg);
-
       }
     }
   }
@@ -352,11 +342,10 @@ bool KinoReplanFSM::callKinodynamicReplan() {
     LocalTrajData *locdat = &planner_manager_->local_data_;
 
     /* publish traj */
-    kr_tracker_msgs::BsplineTrackerActionGoal bspline_msg;
+    kr_tracker_msgs::PolyTrackerActionGoal bspline_msg;
 
-    bspline_msg.goal.order      = 3;
-    bspline_msg.goal.start_time = locdat->start_time_;
-    bspline_msg.goal.traj_id    = locdat->traj_id_;
+    bspline_msg.goal.t_start = locdat->start_time_;
+    bspline_msg.goal.cpts_status = 2;
 
     Eigen::MatrixXd pos_pts = locdat->position_traj_.getControlPoint();
 
@@ -373,15 +362,12 @@ bool KinoReplanFSM::callKinodynamicReplan() {
       bspline_msg.goal.knots.push_back(knots(i));
     }
 
-    Eigen::MatrixXd yaw_pts = locdat->yaw_traj_.getControlPoint();
-    for (int i = 0; i < yaw_pts.rows(); ++i) {
-      double yaw = yaw_pts(i, 0);
-      bspline_msg.goal.yaw_pts.push_back(yaw);
-    }
-    bspline_msg.goal.yaw_dt = locdat->yaw_traj_.getInterval();
-
-    cout << "!!!!!!!!!!! send the command" << endl;
-    bspline_msg.goal.status = 2;
+    // Eigen::MatrixXd yaw_pts = locdat->yaw_traj_.getControlPoint();
+    // for (int i = 0; i < yaw_pts.rows(); ++i) {
+    //   double yaw = yaw_pts(i, 0);
+    //   bspline_msg.goal.yaw_pts.push_back(yaw);
+    // }
+    cout << "KinoReplanFSM::callKinodynamicReplan " << endl;
     traj_goal_pub_.publish(bspline_msg);
 
     std_srvs::Trigger trg;
