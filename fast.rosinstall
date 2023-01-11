@@ -1,4 +1,4 @@
-- git: {local-name: kr_mav_control, uri: 'git@github.com:yuwei-wu/kr_mav_control.git', version: 'bspline'}
+- git: {local-name: kr_mav_control, uri: 'git@github.com:yuwei-wu/kr_mav_control.git', version: 'poly'}
 - git: {local-name: nlopt, uri: 'git@github.com:ethz-asl/nlopt.git'}
 - git: {local-name: waypoint_navigation_plugin, uri: 'git@github.com:KumarRobotics/waypoint_navigation_plugin.git'}
 
